@@ -73,7 +73,7 @@ class Initiator extends Module
     print('Starting testMem $n iterations from address ${addr.hex()} with data ${data.hex()}');
     for( int i = 0; i < n; i++ , addr += 4 , data++ )
     {
-      await( memoryPort.write32( addr , data ) );
+      await memoryPort.write32( addr , data );
       mPrint('just wrote ${data.hex()} to ${addr.hex()}' );
 
       int readData = await memoryPort.read32( addr );

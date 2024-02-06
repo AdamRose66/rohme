@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 import 'dart:typed_data';
 import 'memory_if.dart';
+import '../primitives/access_type.dart';
 
 /// A wrapper around ByteData, adding allignment checking and [DmiHint]s.
 ///
@@ -83,7 +84,7 @@ class BusData
   }
 
   /// For memory, always returns a [DmiHint], assuming [addr] is in range.
-  DmiHint getDmiHint( int addr , [BusAccessType busAccessType = BusAccessType.readWrite] )
+  DmiHint getDmiHint( int addr , [AccessType accessType = AccessType.readWrite] )
   {
       return DmiHint( this , addr );
   }

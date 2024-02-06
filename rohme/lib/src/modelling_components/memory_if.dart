@@ -13,17 +13,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 */
 
 import '../modelling/port.dart';
+import '../primitives/access_type.dart';
 import 'bus_data.dart';
-
-/// An enum used to control DmiHint requests
-enum BusAccessType {
-  read( 0x1 ),
-  write( 0x2 ) ,
-  readWrite( 0x3 );
-
-  const BusAccessType(this.value);
-  final num value;
-}
 
 /// Provides Direct Memory Access to a memory
 ///
@@ -96,9 +87,9 @@ abstract interface class MemoryIf
 
   /// get a DmiHint from [addr].
   ///
-  /// The availability of the hint may depend on the BusAccessType
+  /// The availability of the hint may depend on the [accessType]
   ///
-  DmiHint getDmiHint( int addr , [BusAccessType busAccessType = BusAccessType.readWrite] );
+  DmiHint getDmiHint( int addr , [AccessType accessType = AccessType.readWrite] );
 }
 
 /// A convenience port for [MemoryIf]
@@ -134,14 +125,14 @@ class AlignmentError implements Exception
 class NoDmiHint implements Exception
 {
   final int addr;
-  BusAccessType busAccessType;
+  AccessType accessType;
   final String name;
 
-  NoDmiHint( this.name , this.addr , this.busAccessType );
+  NoDmiHint( this.name , this.addr , this.accessType );
 
   @override
   String toString()
   {
-    return '$name: no Dmi Hint for address $addr.hex access type $busAccessType';
+    return '$name: no Dmi Hint for address $addr.hex access type $accessType';
   }
 }

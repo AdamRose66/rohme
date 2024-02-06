@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 import '../modelling.dart';
 import '../utils.dart';
+import '../primitives/access_type.dart';
 import 'memory_if.dart';
 
 /// A router that decodes inbound read/write calls and forwards them to memory mapped targets.
@@ -200,7 +201,7 @@ class Router extends Module implements MemoryIf
   }
 
   @override
-  DmiHint getDmiHint( int addr , [BusAccessType busAccessType = BusAccessType.readWrite] )
+  DmiHint getDmiHint( int addr , [AccessType accessType = AccessType.readWrite] )
   {
     MemoryPort memoryPort;
     int startAddress;

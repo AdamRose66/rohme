@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 import '../modelling.dart';
 import '../primitives/Semaphore.dart';
+import '../primitives/access_type.dart';
 import '../utils.dart';
 
 import 'memory_if.dart';
@@ -152,12 +153,12 @@ class Memory extends Module implements MemoryIf
 
   /// get a DmiHint from [addr].
   ///
-  /// The availability of the hint may depend on the BusAccessType
+  /// The availability of the hint may depend on the [accessType]
   ///
   @override
-  DmiHint getDmiHint( int addr , [BusAccessType busAccessType = BusAccessType.readWrite] )
+  DmiHint getDmiHint( int addr , [AccessType accessType = AccessType.readWrite] )
   {
-    return _busData.getDmiHint( addr , busAccessType );
+    return _busData.getDmiHint( addr , accessType );
   }
 
   /// A lazy getter for _busData
