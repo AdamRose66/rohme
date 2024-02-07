@@ -51,12 +51,12 @@ abstract class RegisterBase
   }
 }
 
-/// The Register class
+/// A Register class that allows overlapping fields
 ///
-/// The register class has an [initialValue] , a [size] and zero, one or more
-/// [Field]s.
+/// Has an [initialValue] , a [size] and zero, one or more [Field]s.
+/// If instantiated directly, the fields may overlap.
 ///
-class Register extends RegisterBase
+class RegisterWithOverlaps extends RegisterBase
 {
   /// The initial value
   final int initialValue;
@@ -79,7 +79,7 @@ class Register extends RegisterBase
   ///
   /// The initialValue is the value that the register gets at start of day and
   /// when [reset()] is called.
-  Register( super.name , { this.initialValue = 0 , this.size = 32 } ) : _value = initialValue
+  RegisterWithOverlaps( super.name , { this.initialValue = 0 , this.size = 32 } ) : _value = initialValue
   {
     if( size > 64 )
     {
@@ -108,18 +108,15 @@ class Register extends RegisterBase
       throw DuplicateFieldNameError( name , fieldName );
     }
 
-    _fields.forEach( (name,field) {
-      if( _startsOrEndsWithin( range , field.range ) ||
-          _startsOrEndsWithin( field.range , range ) )
-      {
-        throw FieldOverlapError( range , field );
-      }
-    } );
+    checkForOverlaps( range );
 
     Field field = Field( this , fieldName , range );
     _fields[fieldName] = ( field );
     return field;
   }
+
+  /// does nothing here - but overriden in [Register]
+  void checkForOverlaps( (int,int) range ) {}
 
   /// The setter for the underlying value ( ie write )
   ///
@@ -170,6 +167,26 @@ class Register extends RegisterBase
     }
     return str;
   }
+}
+
+/// The Register class used in [RegisterMap]
+///
+/// The register class does not allow overlapping bit fields
+class Register extends RegisterWithOverlaps
+{
+  Register( super.name , { super.initialValue = 0 , super.size = 32 } );
+
+  @override
+  void checkForOverlaps( (int,int) range )
+  {
+    _fields.forEach( (name,field) {
+      if( _startsOrEndsWithin( range , field.range ) ||
+          _startsOrEndsWithin( field.range , range ) )
+      {
+        throw FieldOverlapError( range , field );
+      }
+    } );
+  }
 
   static bool _startsOrEndsWithin( (int,int) range1 , (int,int) range2 )
   {
@@ -200,7 +217,7 @@ class Register extends RegisterBase
 class Field extends RegisterBase
 {
   /// The [Register] that this field is part of.
-  final Register register;
+  final RegisterWithOverlaps register;
   /// The range of this field ( [from,to) )
   final (int,int) range;
   /// The mask needed by this register to correctly modify the [Register].

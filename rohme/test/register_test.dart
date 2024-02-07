@@ -17,7 +17,7 @@ import 'package:test/test.dart';
 
 class MyReg extends Register
 {
-  late final Field a , b , c;
+  late final Field a , b ,c;
 
   MyReg( super.name )
   {
@@ -54,7 +54,22 @@ class MyReg extends Register
   }
 }
 
-MyReg r1 = MyReg( 'r1' );
+class MyUnion extends RegisterWithOverlaps
+{
+  late final List<Field> halfwords;
+  late final List<Field> bytes;
+
+  MyUnion( super.name )
+  {
+    halfwords = [ addField('hw0' , (0 , 16 )) ,
+                  addField('hw1' , (16 , 32 )) ];
+
+    bytes = [ addField('b0' , (0 , 8 )) ,
+              addField('b1' , (8 , 16 )) ,
+              addField('b2' , (16 , 24 )) ,
+              addField('b3' , (24 , 32 )) ];
+  }
+}
 
 void main() async {
   group('A group of tests', () {
@@ -62,6 +77,8 @@ void main() async {
     });
 
     test('simple register test', () async {
+      MyReg r1 = MyReg( 'r1' );
+
       r1.onRead = ( data ) => print('r1 saw read ${data.bin()}');
       r1.onWrite = ( data ) => print('r1 saw write ${data.bin()}');
 
@@ -92,6 +109,21 @@ void main() async {
 
       r1.reset();
       expect( r1.debugValue , 0 );
+    });
+
+    test('union test', () async {
+      MyUnion myUnion = MyUnion('union');
+
+      myUnion.halfwords[0].value = 0x1234;
+      myUnion.halfwords[1].value = 0x5678;
+
+      expect( myUnion.bytes[0].value , equals( 0x34 ) );
+      expect( myUnion.bytes[1].value , equals( 0x12 ) );
+      expect( myUnion.bytes[2].value , equals( 0x78 ) );
+      expect( myUnion.bytes[3].value , equals( 0x56 ) );
+
+      myUnion.bytes[2].value = 0x0;
+      expect( myUnion.halfwords[1].value , equals( 0x5600 ) );
     });
   });
 }
