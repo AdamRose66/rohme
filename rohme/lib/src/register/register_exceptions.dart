@@ -53,8 +53,9 @@ class WritetoReadOnly implements Exception
 
   WritetoReadOnly( this.registerBase );
 
+  @override
   String toString()
   {
-    return 'Cannot write to ${registerBase}';
+    return 'Cannot write to $registerBase';
   }
 }

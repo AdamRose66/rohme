@@ -76,7 +76,7 @@ class Field extends RegisterBase
 
     if( accessType != AccessType.readWrite )
     {
-      str += ' : ${accessType} only';
+      str += ' : $accessType only';
     }
 
     return str;

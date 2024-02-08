@@ -197,7 +197,7 @@ void main() async {
       expect( woWriteCount , 1 );
       expect( rwWriteCount , 1 );
 
-      print('After write : ${reg}');
+      print('After write : $reg');
 
       int v = reg.value;
 

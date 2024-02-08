@@ -170,7 +170,7 @@ class RegisterWithOverlaps extends RegisterBase
 
     if( accessType != AccessType.readWrite )
     {
-      str += ' : ${accessType} only';
+      str += ' : $accessType only';
     }
 
     if( _fields.isNotEmpty ) {
@@ -184,7 +184,7 @@ class RegisterWithOverlaps extends RegisterBase
   static int _addToMask( int? currentMask , int newMask )
   {
     if( currentMask == null ) return newMask;
-    return currentMask! | newMask;
+    return currentMask | newMask;
   }
 }
 
@@ -193,6 +193,7 @@ class RegisterWithOverlaps extends RegisterBase
 /// The register class does not allow overlapping bit fields
 class Register extends RegisterWithOverlaps
 {
+  // ignore: use_super_parameters
   Register( String name ,
     { AccessType accessType = AccessType.readWrite ,
       super.initialValue = 0 ,

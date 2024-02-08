@@ -65,7 +65,7 @@ The initiator ( aka master or processor model ) connects to the router, and
 the router connects to each of the memories in this simple system. We use <= to
 connect a Port that requires an interface to a Port that provides it.
 
-Here is code in the timer example that interacts with the register map:
+Here is the code in the timer example that interacts with the register map:
 ```dart
 const loops = 3;
 const clocksPerLoop = 10;
