@@ -34,19 +34,19 @@ examples/fifo_channel_example.dart:
 ```dart
 void run() async
 {
-  Print('run');
+  mPrint('run');
   for( int i = 0; i < 10; i++ )
   {
-    Print('about to put ${i}');
+    mPrint('about to put $i');
     await putPort.put( i );
-    await Delay( 10 );
+    await Future.delayed( Duration( microseconds : 10 ) );
   }
 }
 ```
 
 There are two asynchronous calls in the loop. The first waits until there is
 room in the fifo attached to the putPort before completing. The second
-interacts with the scheduler to wait 10 time units before continuing.
+interacts with the scheduler to wait 10 microseconds before continuing.
 
 Here is the connect method from examples/memory_map_test.dart:
 

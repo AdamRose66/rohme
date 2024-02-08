@@ -45,7 +45,7 @@ class Producer extends Module
   }
 
   @override
-  Future<void> run() async
+  void run() async
   {
     mPrint('run');
     for( int i = 0; i < 10; i++ )
@@ -67,7 +67,7 @@ class Consumer extends Module
   }
 
   @override
-  Future<void> run() async
+  void run() async
   {
     mPrint('run');
     for( int i = 0; i < 10; i++ )
