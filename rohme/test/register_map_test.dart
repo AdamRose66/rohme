@@ -35,7 +35,7 @@ void main() async {
       Register r0 = registerMap.getByName('r0');
 
       print('$r0');
-      expect( r0.debugValue , 0x1234 );
+      expect( r0.debugValue , 0x1234 & 0x1f3 );
 
       //Register r1 = registerMap[0x90
       bool ok;
