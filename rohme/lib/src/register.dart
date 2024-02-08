@@ -14,5 +14,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 library;
 
+export 'register/register_base.dart';
+export 'register/field.dart';
 export 'register/register.dart';
 export 'register/register_map.dart';
+export 'register/register_exceptions.dart';

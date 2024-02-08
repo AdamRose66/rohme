@@ -19,5 +19,15 @@ enum AccessType {
   readWrite( 0x3 );
 
   const AccessType(this.value);
-  final num value;
+  final int value;
+
+  bool isReadAccess()
+  {
+    return (value & read.value) != 0;
+  }
+
+  bool isWriteAccess()
+  {
+    return (value & write.value) != 0;
+  }
 }

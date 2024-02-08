@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 import 'dart:collection';
 import 'register.dart';
+import '../primitives/access_type.dart';
 
 /// Encapsulates one master's view of the memory map
 ///
@@ -64,9 +65,16 @@ class RegisterMap
   /// Whichever way is used to specify the fields, the range is specified as
   /// [from,to). In other words, b is in the range if from <= b < to.
   ///
-  Register addRegister( String registerName , int address , { int initialValue = 0 , List<(String,int,int)> fieldDescriptors = const [] } )
+  Register addRegister( String registerName , int address ,
+    { int initialValue = 0 ,
+      List<(String,int,int)> fieldDescriptors = const [] ,
+      AccessType accessType = AccessType.readWrite } )
   {
-    Register register = Register( registerName , initialValue: initialValue , size: registerSize );
+    Register register = Register( registerName ,
+                                  accessType: accessType ,
+                                  initialValue: initialValue ,
+                                  size: registerSize );
+
     map[address] = register;
     byName[registerName] = register;
 

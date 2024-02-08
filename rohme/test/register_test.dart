@@ -71,6 +71,18 @@ class MyUnion extends RegisterWithOverlaps
   }
 }
 
+class RestrictedFieldAccessRegister extends Register
+{
+  late final Field wo , rw , ro;
+
+  RestrictedFieldAccessRegister( super.name )
+  {
+    wo = addField('wo',(0,8),AccessType.write);
+    rw = addField('rw',(8,24),AccessType.readWrite);
+    ro = addField('ro',(24,32),AccessType.read);
+  }
+}
+
 void main() async {
   group('A group of tests', () {
     setUp(() {
@@ -86,15 +98,18 @@ void main() async {
       r1.a.onWrite = ( data ) => print('r1.a saw write ${data.bin()}');
 
       r1.value = 0x96; // 0x96,0b10010110 { a(2, 4) = 0x1,0b1; b(0, 2) = 0x2,0b10; c(4, 5) = 0x1,0b1; }
+
+      int expectedValue = 0x96 & 0x1f;
       int a = r1.value;
 
       print('$r1');
-      expect( a , 0x96 );
+      expect( a , expectedValue );
 
       r1.a.value = 0xffff;
 
       print('$r1');
-      expect( r1.debugValue , 0x9e );
+      expect( r1.a.debugValue , 0x3 );
+      expect( r1.debugValue , expectedValue | ( 0x2 << 2 ) );
 
       // ignore: unused_local_variable
       int r1A = r1.a.value;
@@ -109,6 +124,7 @@ void main() async {
 
       r1.reset();
       expect( r1.debugValue , 0 );
+
     });
 
     test('union test', () async {
@@ -125,5 +141,73 @@ void main() async {
       myUnion.bytes[2].value = 0x0;
       expect( myUnion.halfwords[1].value , equals( 0x5600 ) );
     });
+
+    test('simple register access test', () {
+      Register ro = Register('ro', accessType : AccessType.read );
+      Register wo = Register('wo', accessType : AccessType.write );
+
+      print('$ro');
+      print('$wo');
+
+      bool ok = true;
+      try
+      {
+        ro.value = 0x1234;
+      }
+      on WritetoReadOnly catch( e )
+      {
+        print('expected error $e');
+        ok = false;
+      }
+
+      // we threw an exception
+      expect( ok , equals( false ) );
+      // the write never actually happened
+      expect( ro.value , equals( 0 ) );
+
+      wo.value = 0x1234;
+
+      // the write happened
+      expect( wo.debugValue , equals( 0x1234 ) );
+
+      // but we can't read from it
+      expect( wo.value , equals( 0 ) );
+    });
+
+    test('field access test', () {
+      int woWriteCount = 0 , rwWriteCount = 0 , roWriteCount = 0;
+      int woReadCount = 0 , rwReadCount = 0 , roReadCount = 0;
+
+      RestrictedFieldAccessRegister reg = RestrictedFieldAccessRegister('reg');
+
+      reg.onRead = ( v ) => print('just read reg ${v.hex()}');
+      reg.onWrite = ( v ) => print('just wrote reg ${v.hex()}');
+
+      reg.wo.onRead = ( v ) { print('just read WO ${v.hex()}'); woReadCount++; };
+      reg.wo.onWrite = ( v ) { print('just wrote WO ${v.hex()}'); woWriteCount++; };
+
+      reg.rw.onRead = ( v ) { print('just read RW ${v.hex()}'); rwReadCount++; };
+      reg.rw.onWrite = ( v ) { print('just wrote RW ${v.hex()}'); rwWriteCount++; };
+
+      reg.ro.onRead = ( v ) { print('just read RO ${v.hex()}'); roReadCount++; };
+      reg.ro.onWrite = ( v ) { print('just wrote RO ${v.hex()}'); roWriteCount++; };
+
+      reg.value = 0x12345678;
+
+      expect( woWriteCount , 1 );
+      expect( rwWriteCount , 1 );
+
+      print('After write : ${reg}');
+
+      int v = reg.value;
+
+      expect( roReadCount , 1 );
+      expect( rwReadCount , 1 );
+
+      expect( v , 0x345600 );
+      expect( woReadCount , 0 );
+      expect( roWriteCount , 0 );
+    });
+
   });
 }
