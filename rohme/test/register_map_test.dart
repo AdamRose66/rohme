@@ -23,13 +23,11 @@ void main() async {
     });
 
     test('simple register test', () async {
-      registerMap.addRegister('r0', 0x100 ,
-        fieldDescriptors : [
-          ('a',0,2,AccessType.readWrite) ,
-          ('b',4,9,AccessType.readWrite) ,
-          ('c',31,32,AccessType.readWrite)
-        ]
-      );
+      Register rmapR0 = registerMap.addRegister('r0', 0x100 );
+
+      rmapR0.addField('a',(0,2));
+      rmapR0.addField('b',(4,9));
+      rmapR0.addField('c',(31,32));
 
       registerMap[0x100].write( 0x1234 );
       Register r0 = registerMap.getByName('r0');

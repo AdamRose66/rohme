@@ -41,19 +41,7 @@ class RegisterMap
 
   /// Adds a [Register] to an [address] in the Register map
   ///
-  /// [fieldDescriptors], if supplied, is a list of (registerName,start,end,accessType)
-  /// quadruplets which can be used to create fields associated with this
-  /// register.
-  ///
-  /// ```dart
-  /// registerMap.addRegister('r0', 0x100 ,
-  ///   fieldDescriptors : [
-  ///     ('a',0,2,AccessType.readWrite) ,
-  ///     ('b',4,9,AccessType.read) ,
-  ///    ('c',31,32,,AccessType.write)
-  ///   ]);
-  /// ```
-  /// It is also possible to add fields after the [Register] has been created.
+  /// [Field]s are added after the [Register] has been created.
   ///
   /// Register r = registerMap.addRegister('r0', 0x100 );
   ///
@@ -63,12 +51,10 @@ class RegisterMap
   /// r.addField( r , 'b' , (31,32) , AccessType.write );
   /// ```
   ///
-  /// Whichever way is used to specify the fields, the range is specified as
-  /// [from,to). In other words, b is in the range if from <= b < to.
-  ///
+  /// The range of a field is specified as [from,to). In other words, b is in
+  /// the range if from <= b < to.
   Register addRegister( String registerName , int address ,
     { int initialValue = 0 ,
-      List<(String,int,int,AccessType)> fieldDescriptors = const [] ,
       AccessType accessType = AccessType.readWrite } )
   {
     Register register = Register( registerName ,
@@ -78,16 +64,6 @@ class RegisterMap
 
     map[address] = register;
     byName[registerName] = register;
-
-    for( (String,int,int,AccessType) f in fieldDescriptors )
-    {
-      String fieldName;
-      int from , to;
-      AccessType accessType;
-
-      ( fieldName , from , to , accessType ) = f;
-      register.addField( fieldName , (from,to) , accessType );
-    }
     return register;
   }
 
