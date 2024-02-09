@@ -32,3 +32,12 @@ extension HexPrint on int {
     return '${this.hex()},${this.bin()}';
   }
 }
+
+/// A Class Wrapper around an int, to enable pass by reference semantics
+///
+/// Particularly used by [RegisterWithOverlaps], and by extension, [Register].
+class SharedInt
+{
+  int value;
+  SharedInt( [this.value = 0] );
+}

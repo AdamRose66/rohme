@@ -29,9 +29,12 @@ class RegisterWithOverlaps extends RegisterBase
   /// The initial value
   final int initialValue;
   /// the stored value
-  int _value;
+  ///
+  /// This can either be local storage, or shared with one or more other
+  /// Registers, as if the Register was a union of structs
+  final SharedInt sharedIntValue;
   /// the size ( in bits ) of the register
-  int size;
+  final int size;
   /// the list of fields of this register
   final Map<String,Field> _fields = {};
 
@@ -40,22 +43,29 @@ class RegisterWithOverlaps extends RegisterBase
   /// the write mask for this register
   int? _writeMask;
 
-  /// the setter ( ie poke )
+  /// Writes a value, with no side effects
   @override
-  set debugValue( int data ) => _value = data;
+  void poke( int data ) =>  sharedIntValue.value = data;
 
-  // the getter ( ie peek )
+  /// Reads a value, with no side effects
   @override
-  int get debugValue => _value;
+  int peek() => sharedIntValue.value;
 
   /// The Register Constructor
   ///
-  /// The initialValue is the value that the register gets at start of day and
-  /// when [reset()] is called.
+  /// In the default case of [sharedInt] == null, the initialValue is the value
+  /// that the register gets at start of day and when [reset()] is called.
+  ///
+  /// If sharedInt is not null, then the int storage is whatever is supplied
+  /// in that [SharedInt]. Calling reset() on this register will set the _value
+  /// of that shared int to this register's initialValue.
   RegisterWithOverlaps( String name ,
     { AccessType accessType = AccessType.readWrite ,
       this.initialValue = 0 ,
-      this.size = 32 } ) :  _value = initialValue , super( name , accessType )
+      this.size = 32 ,
+      SharedInt? sharedInt ,
+      } ) :  sharedIntValue = sharedInt ?? SharedInt( initialValue ) ,
+            super( name , accessType )
   {
     if( size > 64 )
     {
@@ -106,39 +116,39 @@ class RegisterWithOverlaps extends RegisterBase
   /// does nothing here - but overriden in [Register]
   void _checkForOverlaps( (int,int) range ) {}
 
-  /// The setter for the underlying value ( ie write )
+  /// Writes a value, with possible side effects
   ///
   /// If this register is writeable, sets the value, calls the write field
   /// callbacks, and then calls the write register callback.
   ///
   /// If it is not writeable, we throw WritetoReadOnly immediately
   @override
-  set value( int data )
+  void write( int data )
   {
     if( !accessType.isWriteAccess() )
     {
       throw WritetoReadOnly( this );
     }
 
-    debugValue = _writeMask == null ? data : data & _writeMask!;
+    poke( _writeMask == null ? data : data & _writeMask! );
 
     _fields.forEach( (name,f) {
       if( f.accessType.isWriteAccess() ) {
-        f.onWrite?.call( f.debugValue );
+        f.onWrite?.call( f.peek() );
       }
     });
 
     onWrite?.call( data );
   }
 
-  /// The getter for the underlying value ( ie write )
+  /// Reads a value, with possible side effects
   ///
   /// If this register is readable, calls the read field callbacks, gets the
   /// value, calls the register read callbacks, and then returns the value.
   ///
   /// If it not readable, simply return zero.
   @override
-  int get value
+  int read()
   {
     if( !accessType.isReadAccess() )
     {
@@ -147,11 +157,11 @@ class RegisterWithOverlaps extends RegisterBase
 
     _fields.forEach( (name,f) {
       if( f.accessType.isReadAccess() ) {
-        f.onRead?.call( f.debugValue );
+        f.onRead?.call( f.peek() );
       }
     });
 
-    int v = _readMask == null ? debugValue : debugValue & _readMask!;
+    int v = _readMask == null ? peek() : peek() & _readMask!;
 
     onRead?.call( v );
     return v;
@@ -159,13 +169,13 @@ class RegisterWithOverlaps extends RegisterBase
 
   /// Resets the underlying value to [initialValue], without calling any
   /// callbacks.
-  void reset() => debugValue = initialValue;
+  void reset() => poke( initialValue );
 
   /// A string representation of the Register
   @override
   String toString()
   {
-    int v = debugValue;
+    int v = peek();
     String str = '$name = ${v.hexBin()}';
 
     if( accessType != AccessType.readWrite )
@@ -175,7 +185,7 @@ class RegisterWithOverlaps extends RegisterBase
 
     if( _fields.isNotEmpty ) {
       str += ' {';
-      _fields.forEach( (fieldName,field) { str += ' $fieldName${field.range} = ${field.debugValue.hexBin()};'; } );
+      _fields.forEach( (fieldName,field) { str += ' $fieldName${field.range} = ${field.peek().hexBin()};'; } );
       str += ' }';
     }
     return str;
@@ -193,11 +203,11 @@ class RegisterWithOverlaps extends RegisterBase
 /// The register class does not allow overlapping bit fields
 class Register extends RegisterWithOverlaps
 {
-  // ignore: use_super_parameters
-  Register( String name ,
-    { AccessType accessType = AccessType.readWrite ,
+  Register( super.name ,
+    { super.accessType = AccessType.readWrite ,
       super.initialValue = 0 ,
-      super.size = 32 } ) : super( name , accessType: accessType );
+      super.size = 32 ,
+      super.sharedInt } );
 
   @override
   void _checkForOverlaps( (int,int) range )

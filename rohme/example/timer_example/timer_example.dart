@@ -14,25 +14,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 import 'package:rohme/rohme.dart';
 
-RegisterMap registerMap = RegisterMap('master register map');
+import 'register_map.dart';
+import 'hardware_timer.dart';
 
 void main() async {
   initialiseRegisterMap();
   simulate( () { return Top('top'); } );
-}
-
-void initialiseRegisterMap()
-{
-  registerMap.addRegister('TIMER.TIME',0x000);
-  registerMap.addRegister('TIMER.CONTROL',0x004,
-    fieldDescriptors: [
-      ('START',0,1) ,
-      ('STOP',1,2) ,
-      ('CONTINUOUS',2,3) ]);
-  registerMap.addRegister('TIMER.ELAPSED',0x008);
-
-  print('${registerMap.name}:');
-  registerMap.map.forEach( (addr,r) { print('  $r'); });
 }
 
 class Top extends Module
@@ -84,76 +71,13 @@ class Top extends Module
     const loops = 3;
     const clocksPerLoop = 10;
 
-    registerMap[0x0].value = clocksPerLoop;
-    registerMap[0x4]['CONTINUOUS'].value = 1;
-    registerMap[0x4]['START'].value = 1;
+    registerMap[0x0].write( clocksPerLoop );
+    registerMap[0x4]['CONTINUOUS'].write( 1 );
+    registerMap[0x4]['START'].write( 1 );
 
     Future.delayed( clock.clockPeriod *  clocksPerLoop * loops , () {
-      registerMap[0x4]['STOP'].value = 1;
-      mPrint('${registerMap[0x8].value} timer loops have expired');
+      registerMap[0x4]['STOP'].write( 1 );
+      mPrint('${registerMap[0x8].read()} timer loops have expired');
     } );
-  }
-}
-
-class HardWareTimer extends Module
-{
-  late final Register time , control , elapsed;
-  late final Field start , stop , continuous;
-  late final SimClockPort clock;
-  late final SignalWritePort irq;
-
-  bool carryOn = false;
-
-  HardWareTimer( super.name , [super.parent] )
-  {
-    time = registerMap.getByName('TIMER.TIME');
-    control = registerMap.getByName('TIMER.CONTROL');
-    elapsed = registerMap.getByName('TIMER.ELAPSED');
-
-    start = control['START'];
-    stop = control['STOP'];
-    continuous = control['CONTINUOUS'];
-
-    clock = SimClockPort('clock',this);
-    irq = SignalWritePort('irq',this);
-
-    start.onWrite = ( data ) { controlStartWrite(); };
-    stop.onWrite = ( data ) { controlStopWrite(); };
-  }
-
-  Future<void> controlStartWrite() async {
-    elapsed.debugValue = 0;
-    bool wasContinuousAtBeginning = continuous.debugValue != 0;
-
-    for( bool carryOn = await timerLoop();
-         wasContinuousAtBeginning && carryOn && start.debugValue == 1;
-         carryOn = await timerLoop() ) {}
-  }
-
-  Future<bool> timerLoop() async
-  {
-    bool clockOk = await clock.delay( time.debugValue );
-
-    // if the clock was cancelled, return false
-    if( !clockOk ) {
-      return false;
-    }
-
-    // if the timer has been stopped, return false
-    if( start.debugValue != 1 ) {
-      return false;
-    }
-
-    elapsed.debugValue++;
-
-    await irq.nba( 1 );
-    await irq.nba( 0 );
-
-    return true;
-  }
-
-  void controlStopWrite() {
-    stop.debugValue = 0;
-    start.debugValue = 0;
   }
 }

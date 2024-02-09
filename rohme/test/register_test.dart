@@ -88,6 +88,7 @@ void main() async {
     setUp(() {
     });
 
+
     test('simple register test', () async {
       MyReg r1 = MyReg( 'r1' );
 
@@ -97,24 +98,24 @@ void main() async {
       r1.a.onRead = ( data ) => print('r1.a saw read ${data.bin()}');
       r1.a.onWrite = ( data ) => print('r1.a saw write ${data.bin()}');
 
-      r1.value = 0x96; // 0x96,0b10010110 { a(2, 4) = 0x1,0b1; b(0, 2) = 0x2,0b10; c(4, 5) = 0x1,0b1; }
+      r1.write( 0x96 ); // 0x96,0b10010110 { a(2, 4) = 0x1,0b1; b(0, 2) = 0x2,0b10; c(4, 5) = 0x1,0b1; }
 
       int expectedValue = 0x96 & 0x1f;
-      int a = r1.value;
+      int a = r1.peek();
 
       print('$r1');
       expect( a , expectedValue );
 
-      r1.a.value = 0xffff;
+      r1.a.write( 0xffff );
 
       print('$r1');
-      expect( r1.a.debugValue , 0x3 );
-      expect( r1.debugValue , expectedValue | ( 0x2 << 2 ) );
+      expect( r1.a.peek() , 0x3 );
+      expect( r1.peek() , expectedValue | ( 0x2 << 2 ) );
 
       // ignore: unused_local_variable
-      int r1A = r1.a.value;
+      int r1A = r1.a.read();
 
-      expect( r1.a.debugValue , 0x3 );
+      expect( r1.a.peek() , 0x3 );
 
       print('$r1');
       Field f = r1['c'];
@@ -123,23 +124,22 @@ void main() async {
       print('$f');
 
       r1.reset();
-      expect( r1.debugValue , 0 );
-
+      expect( r1.peek() , 0 );
     });
 
     test('union test', () async {
       MyUnion myUnion = MyUnion('union');
 
-      myUnion.halfwords[0].value = 0x1234;
-      myUnion.halfwords[1].value = 0x5678;
+      myUnion.halfwords[0].write( 0x1234 );
+      myUnion.halfwords[1].write( 0x5678 );
 
-      expect( myUnion.bytes[0].value , equals( 0x34 ) );
-      expect( myUnion.bytes[1].value , equals( 0x12 ) );
-      expect( myUnion.bytes[2].value , equals( 0x78 ) );
-      expect( myUnion.bytes[3].value , equals( 0x56 ) );
+      expect( myUnion.bytes[0].peek() , equals( 0x34 ) );
+      expect( myUnion.bytes[1].peek() , equals( 0x12 ) );
+      expect( myUnion.bytes[2].peek() , equals( 0x78 ) );
+      expect( myUnion.bytes[3].peek() , equals( 0x56 ) );
 
-      myUnion.bytes[2].value = 0x0;
-      expect( myUnion.halfwords[1].value , equals( 0x5600 ) );
+      myUnion.bytes[2].write( 0x0 );
+      expect( myUnion.halfwords[1].peek() , equals( 0x5600 ) );
     });
 
     test('simple register access test', () {
@@ -152,7 +152,7 @@ void main() async {
       bool ok = true;
       try
       {
-        ro.value = 0x1234;
+        ro.write( 0x1234 );
       }
       on WritetoReadOnly catch( e )
       {
@@ -163,15 +163,15 @@ void main() async {
       // we threw an exception
       expect( ok , equals( false ) );
       // the write never actually happened
-      expect( ro.value , equals( 0 ) );
+      expect( ro.peek(), equals( 0 ) );
 
-      wo.value = 0x1234;
+      wo.write( 0x1234 );
 
       // the write happened
-      expect( wo.debugValue , equals( 0x1234 ) );
+      expect( wo.peek() , equals( 0x1234 ) );
 
       // but we can't read from it
-      expect( wo.value , equals( 0 ) );
+      expect( wo.read() , equals( 0 ) );
     });
 
     test('field access test', () {
@@ -192,14 +192,14 @@ void main() async {
       reg.ro.onRead = ( v ) { print('just read RO ${v.hex()}'); roReadCount++; };
       reg.ro.onWrite = ( v ) { print('just wrote RO ${v.hex()}'); roWriteCount++; };
 
-      reg.value = 0x12345678;
+      reg.write( 0x12345678 );
 
       expect( woWriteCount , 1 );
       expect( rwWriteCount , 1 );
 
       print('After write : $reg');
 
-      int v = reg.value;
+      int v = reg.read();
 
       expect( roReadCount , 1 );
       expect( rwReadCount , 1 );
@@ -208,6 +208,5 @@ void main() async {
       expect( woReadCount , 0 );
       expect( roWriteCount , 0 );
     });
-
   });
 }

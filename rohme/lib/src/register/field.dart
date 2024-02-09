@@ -50,18 +50,18 @@ class Field extends RegisterBase
     mask = calculateMask( range ) ,
     super( name , accessType );
 
-  /// The debugValue setter ( ie poke )
+  /// Writes a value without side effects
   @override
-  set debugValue( int data )
+  void poke( int data )
   {
-    register.debugValue = (register.debugValue & ~mask) | ((data << from) & mask);
+    register.poke( (register.peek() & ~mask) | ((data << from) & mask) );
   }
 
-  /// The debugValue getter ( ie peek )
+  /// Reads a value without side effects
   @override
-  int get debugValue
+  int peek()
   {
-    return (register.debugValue & mask) >> from;
+    return (register.peek() & mask) >> from;
   }
 
   /// A [String] representation of this field
@@ -72,7 +72,7 @@ class Field extends RegisterBase
     int from , to;
 
     (from,to) = range;
-    str = '$name : ${register.name}[$from,$to] = ${debugValue.bin()}';
+    str = '$name : ${register.name}[$from,$to] = ${peek().bin()}';
 
     if( accessType != AccessType.readWrite )
     {

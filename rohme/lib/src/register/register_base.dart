@@ -38,36 +38,36 @@ abstract class RegisterBase
 
   RegisterBase( this.name , this.accessType );
 
-  /// the setter for debugValue ( ie poke )
-  set debugValue( int data );
+  /// writes a value without side effects
+  void poke( int data );
 
-  /// the getter for debugValue ( ie peek )
-  int get debugValue;
+  /// reads a value without side effects
+  int peek();
 
-  /// the setter ( ie write ) for the value. Calls write callback if present
+  /// Writes a value. Calls write callback if present
   ///
   /// Throws WritetoReadOnly if a Read only register is written to
-  set value( int data )
+  void write( int data )
   {
     if( !accessType.isWriteAccess() )
     {
       throw WritetoReadOnly( this );
     }
-    debugValue = data;
-    onWrite?.call( debugValue );
+    poke( data );
+    onWrite?.call( peek() );
   }
 
-  /// the getter ( ie read ) for the value. Calls read callback if present.
+  /// Reads a value. Calls read callback if present.
   ///
   /// If this is a write only register, return 0 and do not call [onRead]
-  int get value
+  int read()
   {
     if( !accessType.isReadAccess() )
     {
       return 0;
     }
 
-    int v = debugValue;
+    int v = peek();
     onRead?.call( v );
     return v;
   }

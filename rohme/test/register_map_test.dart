@@ -25,19 +25,18 @@ void main() async {
     test('simple register test', () async {
       registerMap.addRegister('r0', 0x100 ,
         fieldDescriptors : [
-          ('a',0,2) ,
-          ('b',4,9) ,
-          ('c',31,32)
+          ('a',0,2,AccessType.readWrite) ,
+          ('b',4,9,AccessType.readWrite) ,
+          ('c',31,32,AccessType.readWrite)
         ]
       );
 
-      registerMap[0x100].value = 0x1234;
+      registerMap[0x100].write( 0x1234 );
       Register r0 = registerMap.getByName('r0');
 
       print('$r0');
-      expect( r0.debugValue , 0x1234 & 0x1f3 );
+      expect( r0.peek() , 0x1234 & 0x1f3 );
 
-      //Register r1 = registerMap[0x90
       bool ok;
 
       ok = true;
@@ -68,14 +67,14 @@ void main() async {
 
       Register r1 = registerMap.addRegister('r1',0x200,initialValue: 0xffffffff );
 
-      registerMap[0x200].value = 0x5678;
-      expect( registerMap[0x200].debugValue , 0x5678 );
+      registerMap[0x200].write( 0x5678 );
+      expect( registerMap[0x200].peek() , 0x5678 );
 
       registerMap.reset();
 
       print('$r1');
-      expect( registerMap[0x100].debugValue , 0 );
-      expect( registerMap[0x200].debugValue , 0xffffffff );
+      expect( registerMap[0x100].peek() , 0 );
+      expect( registerMap[0x200].peek() , 0xffffffff );
 
       int count = 0;
       for( int? addr = registerMap.map.firstKeyAfter( 0x99 );
