@@ -100,4 +100,18 @@ void main() {
     expect( 2 , equals( pA2c.a() ) );
     expect( 3 , equals( pA2d.a() ) );
   });
+  test('connection error' , () {
+    bool ok = true;
+    try
+    {
+      Port<A> aPort = Port('a');
+      aPort.portIf.a();
+    }
+    on ProbableConnectionError catch( e )
+    {
+      print('expected error $e');
+      ok = false;
+    }
+    expect( ok , false );
+  });
 }

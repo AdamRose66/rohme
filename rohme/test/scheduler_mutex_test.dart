@@ -96,5 +96,12 @@ void main() async {
       }
       expect( ok , false );
     });
+    test('Semaphore Used Test', () async {
+      bool ok = true;
+      Semaphore semaphore = Semaphore('s',size:2);
+
+      await semaphore.acquire();
+      expect( semaphore.used , 1 );
+    });
   });
 }

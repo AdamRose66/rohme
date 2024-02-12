@@ -136,10 +136,7 @@ class Semaphore implements SemaphoreIf
       }
     }
 
-    if( n > available )
-    {
-      throw SemaphoreAcquireError( threadName , available , n );
-    }
+    assert( n <= available );
 
     // immediately acquire resources
     _remaining -= n;
@@ -198,21 +195,3 @@ class SemaphoreSizeError implements Exception
     return 'Semaphore $name: size must be one or more, not $size';
   }
 }
-
-/// An internal [Semaphore] Error which should never happen !
-// coverage:ignore-start
-class SemaphoreAcquireError extends Error
-{
-  String? name;
-  int currentlyAvailable;
-  int acquireRequest;
-
-  SemaphoreAcquireError( this.name , this.currentlyAvailable , this.acquireRequest );
-
-  @override
-  String toString()
-  {
-    return 'Disaster in semaphore $name: about to acquire $acquireRequest resources when only $currentlyAvailable are available';
-  }
-}
-// coverage:ignore-end

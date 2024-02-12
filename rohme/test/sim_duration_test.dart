@@ -20,7 +20,7 @@ void main()
       print( str );
       expect( str , equals('0:00:00.000001.001001') );
     });
-    test('Sim Duration test', () {
+    test('Duration test', () {
       final d = Duration( microseconds : 1 );
       final onePicoSecond = const SimDuration( picoseconds : 1 );
       final same = SimDuration( microseconds : 1 );
@@ -66,6 +66,21 @@ void main()
     expect( oneHour , onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 * 60 );
     expect( oneDay , onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 * 60 * 24 );
 
+    expect( oneDay.inDays , 1 );
+    expect( oneDay.inHours , 24 );
+    expect( oneHour.inMinutes , 60 );
+    expect( oneMinute.inSeconds , 60 );
+    expect( oneMicroSecond.inNanoseconds , 1000 );
+
+    final minusOnePicosecond = -onePicoSecond;
+
+    expect( minusOnePicosecond.inPicoseconds , -1 );
+    expect( minusOnePicosecond.isNegative , true );
+    expect( minusOnePicosecond.abs() , onePicoSecond );
+
+    expect( onePicoSecond + Duration( seconds: 1 ) , SimDuration( seconds : 1 , picoseconds : 1 ) );
+
+    Duration d = SimDuration.zero;
   });
 
 }
