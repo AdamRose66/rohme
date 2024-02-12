@@ -13,7 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 */
 
 import '../modelling.dart';
-import '../primitives/Semaphore.dart';
+import '../primitives/semaphore.dart';
 import '../primitives/access_type.dart';
 import '../utils.dart';
 
