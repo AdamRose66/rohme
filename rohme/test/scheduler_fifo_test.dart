@@ -76,7 +76,7 @@ void main() async {
       bool ok = true;
       try
       {
-        Fifo<int> f = Fifo( 'f', size: 0 );
+        Fifo( 'f', size: 0 );
       }
       on FifoSizeError catch( e )
       {

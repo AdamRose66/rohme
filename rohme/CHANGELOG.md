@@ -9,3 +9,8 @@
 Introduced RegisterWithOverlaps to allow C style struct/union overlapping access
 Registers with Fields now only write to/read from the bits specified by the
 combined masks of the Fields ( subject to AccessType ).
+
+## 1.1.0
+
+- Register API is now read/write, peek poke
+- use Simulator/SimDuration rather than FakeAsync/Duration

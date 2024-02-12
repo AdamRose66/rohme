@@ -27,7 +27,7 @@ void main()
       final less = same - onePicoSecond;
       final more = same + onePicoSecond;
 
-      print('${d} ${less} ${same} ${more}');
+      print('$d $less $same $more');
 
       print('same test');
       compare( d , same , 0 ,
@@ -56,7 +56,7 @@ void main()
     final oneHour = const SimDuration( hours : 1 );
     final oneDay = const SimDuration( days : 1 );
 
-    print('oneMilliSecond ${oneMilliSecond}');
+    print('oneMilliSecond $oneMilliSecond');
 
     expect( oneNanoSecond , onePicoSecond * 1000 );
     expect( oneMicroSecond , onePicoSecond * 1000 * 1000 );
@@ -79,8 +79,6 @@ void main()
     expect( minusOnePicosecond.abs() , onePicoSecond );
 
     expect( onePicoSecond + Duration( seconds: 1 ) , SimDuration( seconds : 1 , picoseconds : 1 ) );
-
-    Duration d = SimDuration.zero;
   });
 
 }

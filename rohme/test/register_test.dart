@@ -212,7 +212,7 @@ void main() async {
       bool ok = true;
       try
       {
-        Register r0 = Register('r0', size: 65 );
+        Register('r0', size: 65 );
       }
       on ArgumentError catch( e )
       {
@@ -226,7 +226,8 @@ void main() async {
       Register r0 = Register('r0');
       try
       {
-        Field f = r0['a'];
+        //Field f = r0['a'];
+        r0['a'];
       }
       on ArgumentError catch( e )
       {
