@@ -22,24 +22,44 @@ import 'memory_if.dart';
 /// This simple [Router] receives inbound calls to read and write and forwards
 /// them to the correct initiator port, according to the memory map.
 ///
-/// This memory is specified by a list of (start_address,end_address,name)
+/// This memory map is specified by a list of (start_address,end_address,name)
 /// triplets which can be specified in the constructor or by calling
 /// [addInitiatorPorts].
+/// ```dart
+/// List<(int,int,String)> memoryMap = [
+///   (0x000,0x100,'memPortA') ,
+///   (0x100,0x200,'memPortB') ,
+///   (0x400,0x500,'memPortC') ];
 ///
+/// Top( super.name , [super.parent] )
+/// {
+///  ...
+///  router = Router('router',this,memoryMap);
+///
+///  memoryA = Memory('memoryA',this,0x100);
+///  memoryB = Memory('memoryB',this,0x100);
+///  memoryC = Memory('memoryC',this,0x100);
+/// }
+/// ```
 /// Internally, this list is transformed into a list of
 /// (start_address,end_address,[MemoryPort]) triplets, where the MemoryPorts
 /// are automatically constructed.
 ///
-/// This component both implements [MemoryIf] and provides an export, so we
-/// can either connect to it by doing
+/// These [MemoryPort]s need to be connected to components that implement
+/// [MemoryIf] in the connect method of the component that contains the router.
+///
 /// ```dart
-/// memoryPort <= memory.targetExport;
+/// void connect()
+/// {
+///  ...
+///  router.initiatorPort('memPortA') <= memoryA.memoryExport;
+///  router.initiatorPort('memPortB') <= memoryB.memoryExport;
+///  router.initiatorPort('memPortC') <= memoryC.memoryExport;
+/// }
 /// ```
-/// in the connect phase or by doing
-/// ```dart
-/// memoryPort.implementedBy( memory );
-/// ```
-/// in the constructor.
+/// Inbound reads or writes to the single target port are forwarded to a
+/// decoded initiator port on the other side of the router, which directly
+/// calls read or write in the connected component.
 ///
 /// If the read or write address map is not in the address map, then a
 /// [RouterDecodeError] will be thrown.
@@ -69,7 +89,7 @@ class Router extends Module implements MemoryIf
     targetExport.implementedBy( this );
   }
 
-  /// Adds to the initiatorDescription list
+  /// Adds a [MemoryPort] to the memory map, using the [initiatorDescription.
   void addInitiatorPorts( List<(int,int,String)> initiatorDescription )
   {
     for( var d in initiatorDescription )

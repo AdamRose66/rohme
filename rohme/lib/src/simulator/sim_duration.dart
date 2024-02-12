@@ -10,6 +10,8 @@
 
 extension PicoSecondDuration on Duration
 {
+  /// converts a [Duration] to picoseconds, to enable [Duration] to [SimDuration]
+  /// conversion
   int get inPicoseconds
   {
     // ignore: unnecessary_this
@@ -19,9 +21,8 @@ extension PicoSecondDuration on Duration
 
 /// A clone of [Duration] which provides picosecond granularity
 ///
-/// This is for simulating digital systems, which require finer time resolution
-/// than is needed for normal Dart programs.
-///
+/// This is used by [Simulator] for simulating digital systems, which require
+/// finer time resolution than is needed for normal Dart programs.
 class SimDuration implements Duration {
   /// The number of picoseconds per nanosecond.
   static const int picosecondsPerNanosecond = 1000;

@@ -52,7 +52,7 @@ typedef _Microtask = void Function();
 T simulate<T>(T Function(Simulator async) callback, {DateTime? initialTime}) =>
     Simulator(initialTime: initialTime).run(callback);
 
-/// A class that mocks out the passage of time within a [Zone].
+/// A clone of FakeAsync, that mocks out the passage of time within a [Zone].
 ///
 /// Test code can be passed as a callback to [run], which causes it to be run in
 /// a [Zone] which fakes timer and microtask creation, such that they are run
@@ -60,6 +60,9 @@ T simulate<T>(T Function(Simulator async) callback, {DateTime? initialTime}) =>
 ///
 /// The synchronous passage of time (as from blocking or expensive calls) can
 /// also be simulated using [elapseBlocking].
+///
+/// This class uses [SimDuration] to allow finder grained time resolution than
+/// is provided by FakeAsync and [Duration].
 class Simulator {
   /// The value of [clock] within [run].
   late final Clock _clock;
