@@ -42,19 +42,19 @@ class SimClockPort extends Port<SimClock> implements SimClock
 /// clock.stop();
 /// await Future.delayed( clock.clockPeriod * 100 );
 /// clock.stop();
-///
+/// ```
 /// If a Client Process is awaiting the clock when it is stopped, then it will
-/// patiently wait for it restart.
+/// patiently wait for it to restart.
 ///
 /// The clock controller process can also cancel the clock altogether. This will
-/// cause all awaiting clocks to immediately return false. It's up to the Client
-/// process to decide how to deal with this.
+/// cause all awaiting clocks to immediately return false. It is up to the
+/// Client process to decide how to deal with this.
 ///
-/// /// ```dart
+/// ```dart
 /// bool clockOK = await clock.delay( n );
 /// if( !clockOk ) return;
 /// ```
-/// It might be worth turning this into an exception ...
+// TBD: It might be worth turning this into an exception ...
 class SimClock
 {
   /// the period of the clock
@@ -106,7 +106,7 @@ class SimClock
   /// the number of [clockPeriod]s since the clock was last started
   int get ticksSinceStart
   {
-    return (simulator.elapsed.inMicroseconds - elapsedAtStart.inMicroseconds) ~/ clockPeriod.inMicroseconds;
+    return (simulator.elapsed.inPicoseconds - elapsedAtStart.inPicoseconds) ~/ clockPeriod.inPicoseconds;
   }
 }
 
