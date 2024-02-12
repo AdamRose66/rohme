@@ -208,5 +208,47 @@ void main() async {
       expect( woReadCount , 0 );
       expect( roWriteCount , 0 );
     });
+    test('size exception test', () {
+      bool ok = true;
+      try
+      {
+        Register r0 = Register('r0', size: 65 );
+      }
+      on ArgumentError catch( e )
+      {
+        print('seen expected exception $e');
+        ok = false;
+      }
+      expect( ok , false );
+    });
+    test('no such field test', () {
+      bool ok = true;
+      Register r0 = Register('r0');
+      try
+      {
+        Field f = r0['a'];
+      }
+      on ArgumentError catch( e )
+      {
+        print('seen expected exception $e');
+        ok = false;
+      }
+      expect( ok , false );
+    });
+    test('no such field test', () {
+      bool ok = true;
+      Register r0 = Register('r0',accessType: AccessType.read );
+      Field f = r0.addField('f',(0,1), AccessType.read);
+      try
+      {
+        f.write( 0 );
+      }
+      on WritetoReadOnly catch( e )
+      {
+        print('seen expected exception $e');
+        ok = false;
+      }
+      expect( ok , false );
+    });
   });
 }

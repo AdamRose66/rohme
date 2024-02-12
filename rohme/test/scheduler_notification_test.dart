@@ -23,7 +23,7 @@ void runNotificationTest( int d1 , int d2 )
   print('starting notification test');
 
   simulator.run( (async) { notificationTest( d1 , d2 ); });
-  simulator.elapse( Duration( seconds:1 ));
+  simulator.elapse( SimDuration( seconds:1 ));
 
   print('finished sim at ${simulator.elapsed}');
 }
@@ -38,7 +38,7 @@ Future<void> notificationTest( int d1 , int d2 ) async
 Future<void> notifier( String name , int delay ) async
 {
   print('$name: about to wait for $delay at ${simulator.elapsed}');
-  await Future.delayed( Duration( microseconds: delay ) );
+  await Future.delayed( SimDuration( microseconds: delay ) );
 
   print('$name: done notification at ${simulator.elapsed}');
   return;
@@ -50,7 +50,7 @@ Future<void> waitForAllNotifications( String name , List<Future<void>> notificat
   await Future.wait( notifications );
   print('$name: seen all notifications at ${simulator.elapsed}');
 
-  expect( simulator.elapsed, equals( Duration( microseconds: expectedTime ) ) );
+  expect( simulator.elapsed, equals( SimDuration( microseconds: expectedTime ) ) );
 }
 
 Future<void> waitForAnyNotification( String name , List<Future<void>> notifications , expectedTime ) async
@@ -59,7 +59,7 @@ Future<void> waitForAnyNotification( String name , List<Future<void>> notificati
   await Future.any( notifications );
   print('$name: seen one notification at ${simulator.elapsed}');
 
-  expect( simulator.elapsed, equals( Duration( microseconds: expectedTime ) ) );
+  expect( simulator.elapsed, equals( SimDuration( microseconds: expectedTime ) ) );
 }
 
 void main() async {

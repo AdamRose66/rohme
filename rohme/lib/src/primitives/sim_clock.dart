@@ -36,7 +36,7 @@ class SimClockPort extends Port<SimClock> implements SimClock
 /// The clock controller process can start the clock with [start()] and stop it
 // with [stop()]:
 /// ```dart
-/// SimClock clock = SimClock( Duration( microseconds : 100 ) );
+/// SimClock clock = SimClock( SimDuration( microseconds : 100 ) );
 /// clock.start();
 /// await Future.delayed( clock.clockPeriod * 100 );
 /// clock.stop();
@@ -58,9 +58,9 @@ class SimClockPort extends Port<SimClock> implements SimClock
 class SimClock
 {
   /// the period of the clock
-  Duration clockPeriod;
+  SimDuration clockPeriod;
   /// the time at which the clock last started
-  late Duration elapsedAtStart;
+  late SimDuration elapsedAtStart;
   List<SimClockCompleter> _clockCompleterList = [];
 
   SimClock( this.clockPeriod );

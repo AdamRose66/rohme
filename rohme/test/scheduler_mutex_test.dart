@@ -17,15 +17,15 @@ import 'dart:async';
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
-List<Duration> criticalA = [];
-List<Duration> criticalB = [];
+List<SimDuration> criticalA = [];
+List<SimDuration> criticalB = [];
 
 void runMutexTest( int loops )
 {
   print('starting mutexTest');
 
   simulator.run( (async) { mutexTest( loops ); });
-  simulator.elapse( Duration( seconds:1 ));
+  simulator.elapse( SimDuration( seconds:1 ));
   print('finished sim at ${simulator.elapsed}');
 
   expect( criticalA.length , equals( loops ) );
@@ -42,26 +42,26 @@ Future<void> mutexTest( int loops ) async
   greedy( 'b' , loops , mutex , criticalB );
 }
 
-Future<void> greedy( String name , int loops , Mutex m , List<Duration> criticalSections ) async
+Future<void> greedy( String name , int loops , Mutex m , List<SimDuration> criticalSections ) async
 {
   for( int i = 0; i < loops; i++ )
   {
-    await m.lock();
+    await m.lock( name );
     criticalSections.add( simulator.elapsed );
 
     print('$name (${simulator.elapsed}): starting critical section $i');
-    await Future.delayed( Duration( microseconds: 10 ) );
+    await Future.delayed( SimDuration( microseconds: 10 ) );
     print('$name (${simulator.elapsed}): ending critical section $i');
 
-    await m.unlock();
+    await m.unlock( name );
   }
 }
 
-void expectNoOverlap( List<Duration> l1 , List<Duration> l2 )
+void expectNoOverlap( List<SimDuration> l1 , List<SimDuration> l2 )
 {
-  for( Duration t1 in l1 )
+  for( SimDuration t1 in l1 )
   {
-    for( Duration t2 in l2 )
+    for( SimDuration t2 in l2 )
     {
       expect( t1 , isNot( equals( t2 ) ) );
     }
@@ -82,6 +82,19 @@ void main() async {
 
     test('Mutex Test', () async {
       runMutexTest( 3 );
+    });
+    test('Semaphore Size Test', () {
+      bool ok = true;
+      try
+      {
+        Semaphore('s',size:-1);
+      }
+      on SemaphoreSizeError catch( e )
+      {
+        print('seen expected error $e');
+        ok = false;
+      }
+      expect( ok , false );
     });
   });
 }

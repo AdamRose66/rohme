@@ -85,5 +85,5 @@ class Initiator extends Module
 }
 
 void main() async {
-  simulate( () { return Top('top'); } );
+  simulateModel( () { return Top('top'); } );
 }

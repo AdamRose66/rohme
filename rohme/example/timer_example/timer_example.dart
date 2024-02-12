@@ -19,7 +19,7 @@ import 'hardware_timer.dart';
 
 void main() async {
   initialiseRegisterMap();
-  simulate( () { return Top('top'); } );
+  simulateModel( () { return Top('top'); } );
 }
 
 class Top extends Module
@@ -33,7 +33,7 @@ class Top extends Module
 
   Top( super.name )
   {
-    clock = SimClock( Duration( microseconds : 10 ) );
+    clock = SimClock( SimDuration( microseconds : 10 ) );
 
     memory = Memory('memoryA',this,0x1000);
     hardwareTimer = HardWareTimer('timer',this);

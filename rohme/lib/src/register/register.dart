@@ -51,7 +51,7 @@ class RegisterWithOverlaps extends RegisterBase
   @override
   int peek() => sharedIntValue.value;
 
-  /// The Register Constructor
+  /// Constructs a Register that allows overlapping fields.
   ///
   /// In the default case of [sharedInt] == null, the initialValue is the value
   /// that the register gets at start of day and when [reset()] is called.
@@ -59,6 +59,23 @@ class RegisterWithOverlaps extends RegisterBase
   /// If sharedInt is not null, then the int storage is whatever is supplied
   /// in that [SharedInt]. Calling reset() on this register will set the _value
   /// of that shared int to this register's initialValue.
+  ///
+  /// Normal use cases do not use sharedInt :
+  /// ```dart
+  /// Register r1 = Register('r1');
+  /// Register r2 = Register('r2',initialValue=0x1234,size:16);
+  /// ```
+  ///
+  /// The intended use case for sharedInt is to allow muliple views onto the
+  /// same register. This is an analog of union/struct combinations used in C/C++:
+  /// ```dart
+  /// Register r0 = Register('r0');
+  ///
+  /// RegView1 regView1 = RegView1('rv1', r0.sharedIntValue );
+  /// RegView2 regView2 = RegView2('rv2', r0.sharedIntValue );
+  /// ```
+  /// In the code above, the underlying reg has two additional views. Both the
+  /// views and the original register share the same undelying storage.
   RegisterWithOverlaps( String name ,
     { AccessType accessType = AccessType.readWrite ,
       this.initialValue = 0 ,

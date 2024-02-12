@@ -94,5 +94,5 @@ class GetPort extends Port<FifoGetIf<int>> implements FifoGetIf<int>
 void main() {
 //  Top top = Top('top');
 
-  simulate( () { return Top('top'); } );
+  simulateModel( () { return Top('top'); } );
 }

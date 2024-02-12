@@ -1,45 +1,90 @@
-/*
-Copyright 2024 Adam Rose
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-import 'dart:async';
-
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
-void runSimDurationTest()
+void main()
 {
-  print('starting notification test');
+  group('Sim Duration Test', () {
+    test('Sim Duration test', () {
+      final onePicoSecond = const SimDuration( picoseconds : 1 );
+      final oneNanoSecond = const SimDuration( nanoseconds : 1 );
+      final oneMicroSecond = const SimDuration( microseconds : 1 );
+      final twoPicoSeconds = const SimDuration( picoseconds : 2 );
+      final twoNanoSeconds = const SimDuration( nanoseconds : 2 );
 
-  simulator.run( (async) { simDurationTest(); });
-  simulator.elapse( SimDuration( 1 ) );
+      expect( twoPicoSeconds , greaterThan( onePicoSecond ) );
+      expect( onePicoSecond * 2 , equals( twoPicoSeconds ) );
 
-  print('finished sim at $simDurationElapsed');
-}
+      expect( oneMicroSecond * .002 , equals( twoNanoSeconds ) );
 
-Future<void> simDurationTest() async
-{
-  Future.delayed( SimDuration( 10 ) );
-}
-
-void main() async {
-  group('A group of tests', () {
-    setUp(() {
-      // Additional setup goes here.
+      final str = '${onePicoSecond + oneNanoSecond + oneMicroSecond}';
+      print( str );
+      expect( str , equals('0:00:00.000001.001001') );
     });
+    test('Sim Duration test', () {
+      final d = Duration( microseconds : 1 );
+      final onePicoSecond = const SimDuration( picoseconds : 1 );
+      final same = SimDuration( microseconds : 1 );
+      final less = same - onePicoSecond;
+      final more = same + onePicoSecond;
 
-    test('SimDuration Test', () async {
-      runSimDurationTest();
+      print('${d} ${less} ${same} ${more}');
+
+      print('same test');
+      compare( d , same , 0 ,
+               [true,true,true,false,false] ,
+               [true,true,true,false,false] );
+
+      print('more test');
+      compare( d , more , 1 ,
+              [true,false,true,false,true] ,
+              [false,true,false,true,false] );
+
+      print('less test');
+      compare( d , less , -1 ,
+              [false,true,false,true,false] ,
+              [false,false,true,false,true] );
+
     });
   });
+  test('Constructor Test', () {
+    final onePicoSecond = const SimDuration( picoseconds : 1 );
+    final oneNanoSecond = const SimDuration( nanoseconds : 1 );
+    final oneMicroSecond = const SimDuration( microseconds : 1 );
+    final oneMilliSecond = const SimDuration( milliseconds : 1 );
+    final oneSecond = const SimDuration( seconds : 1 );
+    final oneMinute = const SimDuration( minutes : 1 );
+    final oneHour = const SimDuration( hours : 1 );
+    final oneDay = const SimDuration( days : 1 );
+
+    print('oneMilliSecond ${oneMilliSecond}');
+
+    expect( oneNanoSecond , onePicoSecond * 1000 );
+    expect( oneMicroSecond , onePicoSecond * 1000 * 1000 );
+    expect( oneMilliSecond , onePicoSecond * 1000 * 1000 * 1000 );
+    expect( oneSecond , onePicoSecond * 1000 * 1000 * 1000 * 1000 );
+    expect( oneMinute , onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 );
+    expect( oneHour , onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 * 60 );
+    expect( oneDay , onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 * 60 * 24 );
+
+  });
+
+}
+
+void compare( Duration d , SimDuration simD , int comparison , List<bool> durationToSim , List<bool> simToDuration )
+{
+  expect( simD.compareTo( d ) , comparison );
+
+  print('comparing Duration $d to SimDuration $simD using $durationToSim');
+  expect( d == simD , durationToSim[0] );
+  expect( SimDuration.fromDuration( d ) >= simD , durationToSim[1] );
+  expect( SimDuration.fromDuration( d ) <= simD , durationToSim[2] );
+  expect( SimDuration.fromDuration( d ) > simD , durationToSim[3] );
+  expect( SimDuration.fromDuration( d ) < simD , durationToSim[4] );
+
+  print('comparing SimDuration $simD to Duration $d using $simToDuration');
+  expect( simD == d , simToDuration[0] );
+  expect( simD >= d , simToDuration[1] );
+  expect( simD <= d , simToDuration[2] );
+  expect( simD > d , simToDuration[3] );
+  expect( simD < d , simToDuration[4] );
 }

@@ -199,25 +199,8 @@ class SemaphoreSizeError implements Exception
   }
 }
 
-/// Thown by [Semaphore] when attempting to releasw more resources than have
-// been used
-class SemaphoreReleaseError implements Exception
-{
-  int releaseRequest;
-  int currentlyUsed;
-  int size;
-  String name;
-
-  SemaphoreReleaseError( this.name , this.size , this.currentlyUsed , this.releaseRequest );
-
-  @override
-  String toString()
-  {
-    return 'Semaphore $name only has $currentlyUsed resources used, so cannot release $releaseRequest resouces';
-  }
-}
-
 /// An internal [Semaphore] Error which should never happen !
+// coverage:ignore-start
 class SemaphoreAcquireError extends Error
 {
   String? name;
@@ -232,3 +215,4 @@ class SemaphoreAcquireError extends Error
     return 'Disaster in semaphore $name: about to acquire $acquireRequest resources when only $currentlyAvailable are available';
   }
 }
+// coverage:ignore-end

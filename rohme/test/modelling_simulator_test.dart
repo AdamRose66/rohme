@@ -26,7 +26,7 @@ class APort extends Port<A> implements A {
 
 void main() {
   test('port_combined_test' , () {
-    simulate( () => Top('top') );
+    simulateModel( () => Top('top') );
   });
 }
 

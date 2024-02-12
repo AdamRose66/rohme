@@ -249,6 +249,6 @@ void main() async {
   test('combined test' , () {
     config['top.initiator.iterations'] = 10;
 
-    simulate( () => Top('top') );
+    simulateModel( () => Top('top') );
   });
 }

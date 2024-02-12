@@ -17,14 +17,14 @@ import 'dart:async';
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
-void runFifoTest( Duration duration , int size )
+void runFifoTest( SimDuration duration , int size )
 {
   simulator.run( (async) { fifoTest( duration, size ); });
-  simulator.elapse( Duration( seconds:1 ));
+  simulator.elapse( SimDuration( seconds:1 ));
   print('finished test at ${simulator.elapsed}');
 }
 
-void fifoTest( Duration duration , int size ) async
+void fifoTest( SimDuration duration , int size ) async
 {
   print('starting fifoTest $duration');
 
@@ -65,11 +65,25 @@ void main() async {
     });
 
     test('Fifo Test', () async {
-      runFifoTest( Duration.zero , 1 );
-      runFifoTest( Duration( microseconds:10 ) , 1 );
+      runFifoTest( SimDuration.zero , 1 );
+      runFifoTest( SimDuration( microseconds:10 ) , 1 );
 
-      runFifoTest( Duration.zero , 2 );
-      runFifoTest( Duration( microseconds:10 ) , 2 );
+      runFifoTest( SimDuration.zero , 2 );
+      runFifoTest( SimDuration( microseconds:10 ) , 2 );
+    });
+
+    test('Fifo Size Test', () {
+      bool ok = true;
+      try
+      {
+        Fifo<int> f = Fifo( 'f', size: 0 );
+      }
+      on FifoSizeError catch( e )
+      {
+        print('expected error $e');
+        ok = false;
+      }
+      expect( ok , false );
     });
   });
 }

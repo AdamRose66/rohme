@@ -71,10 +71,10 @@ void main() {
         print('old value ${s.currentValue}');
         s.nba( s.currentValue + 1 );
         print('mid value ${s.currentValue}');
-        await Future.delayed( Duration.zero );
+        await Future.delayed( SimDuration.zero );
       }
       s.nba( 0 );
-      await Future.delayed( Duration.zero );
+      await Future.delayed( SimDuration.zero );
 
       expect( anyCount , equals( iterations + 1) );
       expect( posCount , equals( 1 ) );
@@ -98,7 +98,7 @@ void main() {
         fired = true;
       } );
 
-      await Future.delayed( Duration.zero );
+      await Future.delayed( SimDuration.zero );
       expect( fired , true );
     });
 
@@ -107,11 +107,11 @@ void main() {
 
       s.nba( 4 );
       s.nba( 4 );
-      await Future.delayed( Duration.zero );
+      await Future.delayed( SimDuration.zero );
       s.nba( 5 );
 
       expect( s.currentValue , 4 );
-      await Future.delayed( Duration.zero );
+      await Future.delayed( SimDuration.zero );
       expect( s.currentValue , 5 );
     });
   });

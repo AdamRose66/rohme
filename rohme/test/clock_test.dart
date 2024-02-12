@@ -19,19 +19,19 @@ void runClockTest()
 {
   print('starting clock test');
 
-  Map<int,Duration> occurredAt = {};
+  Map<int,SimDuration> occurredAt = {};
 
   simulator.run( (async) { clockTest( occurredAt ); });
-  simulator.elapse( Duration( seconds: 1 ) );
+  simulator.elapse( SimDuration( seconds: 1 ) );
   print('finished sim at ${simulator.elapsed}');
 
   print('occurredAt $occurredAt');
 
   expect( occurredAt , equals( {
-    0: Duration( microseconds: 0 ) ,
-    1: Duration( microseconds: 10 ),
-    2: Duration( microseconds: 110 ),
-    3: Duration( microseconds: 140 )
+    0: SimDuration( microseconds: 0 ) ,
+    1: SimDuration( microseconds: 10 ),
+    2: SimDuration( microseconds: 110 ),
+    3: SimDuration( microseconds: 140 )
   } ) );
 
 }
@@ -47,9 +47,9 @@ void main() async {
   });
 }
 
-Future<void> clockTest( Map<int,Duration> occurredAt ) async
+Future<void> clockTest( Map<int,SimDuration> occurredAt ) async
 {
-  SimClock clock = SimClock( Duration( microseconds : 10 ) );
+  SimClock clock = SimClock( SimDuration( microseconds : 10 ) );
   clock.start();
 
   f( clock , [1,2,3,4,4,4,4,4] , occurredAt );
@@ -69,7 +69,7 @@ Future<void> clockTest( Map<int,Duration> occurredAt ) async
   print('finished test');
 }
 
-Future<void> f( SimClock clock , List<int> delays , Map<int,Duration> occurredAt ) async
+Future<void> f( SimClock clock , List<int> delays , Map<int,SimDuration> occurredAt ) async
 {
   int count = 0;
   for( int d in delays )

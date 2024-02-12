@@ -15,7 +15,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 library;
 
 export 'primitives/access_type.dart';
-export 'primitives/sim_duration.dart';
 export 'primitives/fifo.dart';
 export 'primitives/semaphore.dart';
 export 'primitives/signal.dart';
