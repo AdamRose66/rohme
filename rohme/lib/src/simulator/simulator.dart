@@ -30,6 +30,12 @@ import 'package:collection/collection.dart';
 
 import 'sim_duration.dart';
 
+/// waits n clock ticks
+Future<void> clockDelay( int n ) async
+{
+  await Future.delayed( Zone.current[#clockPeriod] * n  );
+}
+
 /// The type of a microtask callback.
 typedef _Microtask = void Function();
 
@@ -76,6 +82,12 @@ class Simulator {
   /// trace in [Simulator.pendingTimersDebugString].
   final bool includeTimerStackTrace;
 
+  /// The notional clock period for this Simulator
+  final SimDuration clockPeriod;
+
+  /// The number of clock ticks elapsed since start of simulation
+  int get elapsedTicks => _elapsed.inPicoseconds ~/ clockPeriod.inPicoseconds;
+
   /// The fake time at which the current call to [elapse] will finish running.
   ///
   /// This is `null` if there's no current call to [elapse].
@@ -117,7 +129,9 @@ class Simulator {
   ///
   /// Note: it's usually more convenient to use [simulate] rather than creating
   /// a [Simulator] object and calling [run] manually.
-  Simulator({DateTime? initialTime, this.includeTimerStackTrace = true}) {
+  Simulator({this.clockPeriod = const SimDuration( picoseconds : 1 ),
+             DateTime? initialTime,
+             this.includeTimerStackTrace = true}) {
     final nonNullInitialTime = initialTime ?? clock.now();
     _clock = Clock(() => nonNullInitialTime.add(elapsed));
   }
@@ -195,6 +209,7 @@ class Simulator {
   /// a [Simulator] object and calling [run] manually.
   T run<T>(T Function(Simulator self) callback) =>
       runZoned(() => withClock(_clock, () => callback(this)),
+          zoneValues: {#clockPeriod: clockPeriod} ,
           zoneSpecification: ZoneSpecification(
               createTimer: (_, __, ___, duration, callback) =>
                   _createTimer(duration, callback, false),
