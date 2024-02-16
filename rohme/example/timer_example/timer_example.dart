@@ -17,9 +17,11 @@ import 'package:rohme/rohme.dart';
 import 'register_map.dart';
 import 'hardware_timer.dart';
 
+import 'dart:async';
+
 void main() async {
   initialiseRegisterMap();
-  simulateModel( () { return Top('top'); } );
+  simulateModel( () { return Top('top'); } , clockPeriod : SimDuration( milliseconds : 10 ) );
 }
 
 class Top extends Module
@@ -27,14 +29,11 @@ class Top extends Module
   late final Memory memory;
   late final HardWareTimer hardwareTimer;
   late final Signal timerIrq;
-  late final SimClock clock;
 
   int memoryWriteAddress = 0;
 
   Top( super.name )
   {
-    clock = SimClock( SimDuration( microseconds : 10 ) );
-
     memory = Memory('memoryA',this,0x1000);
     hardwareTimer = HardWareTimer('timer',this);
     timerIrq = Signal();
@@ -44,7 +43,6 @@ class Top extends Module
   void connect()
   {
     hardwareTimer.irq.implementedBy( timerIrq );
-    hardwareTimer.clock.implementedBy( clock );
 
     timerIrq.alwaysAt( ( signal ) { interrupt(); } , posEdge );
   }
@@ -60,13 +58,7 @@ class Top extends Module
   }
 
   @override
-  void run()
-  {
-    clock.start();
-    timerStimulus();
-  }
-
-  Future<void> timerStimulus() async
+  Future<void> run() async
   {
     const loops = 3;
     const clocksPerLoop = 10;
@@ -75,9 +67,10 @@ class Top extends Module
     registerMap[0x4]['CONTINUOUS'].write( 1 );
     registerMap[0x4]['START'].write( 1 );
 
-    Future.delayed( clock.clockPeriod *  clocksPerLoop * loops , () {
-      registerMap[0x4]['STOP'].write( 1 );
-      mPrint('${registerMap[0x8].read()} timer loops have expired');
-    } );
+    print('current Zone clock period is ${Zone.current[#clockPeriod]}');
+    await clockDelay( clocksPerLoop * loops );
+
+    registerMap[0x4]['STOP'].write( 1 );
+    mPrint('${registerMap[0x8].read()} timer loops have expired');
   }
 }

@@ -18,8 +18,11 @@ import 'dart:math';
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
+Simulator simulator = Simulator();
+
 void runNotificationTest( int d1 , int d2 )
 {
+
   print('starting notification test');
 
   simulator.run( (async) { notificationTest( d1 , d2 ); });
@@ -64,10 +67,13 @@ Future<void> waitForAnyNotification( String name , List<Future<void>> notificati
 
 void main() async {
   group('A group of tests', () {
+/*
+    bool beenHere = false;
     setUp(() {
-      // Additional setup goes here.
+      if( !beenHere ) simulateModel( () { return Module('top'); });
+      beenHere = true;
     });
-
+*/
     test('Notification Test', () async {
       runNotificationTest( 10 , 20 );
     });

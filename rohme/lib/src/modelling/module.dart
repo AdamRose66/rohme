@@ -92,7 +92,7 @@ class Module extends NamedComponent
   void run() async {}
 }
 
-/// A generic module-aware visitor pattern used by [simulate()]
+/// A generic module-aware visitor pattern used by [Simulator]
 void visit( Module m , {void Function( Module)? topDown, void Function( Module)? bottomUp } ) async
 {
   topDown?.call( m );

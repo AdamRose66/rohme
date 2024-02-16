@@ -60,8 +60,10 @@ Future<void> consumer( String name , int n , Fifo<int> fifo ) async
 
 void main() async {
   group('A group of tests', () {
+    bool beenHere = false;
     setUp(() {
-      // Additional setup goes here.
+      if( !beenHere ) simulateModel( () { return Module('top'); });
+      beenHere = true;
     });
 
     test('Fifo Test', () async {

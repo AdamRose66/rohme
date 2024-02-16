@@ -21,18 +21,17 @@
 
 import 'dart:async';
 import 'package:rohme/rohme.dart';
-import 'package:clock/clock.dart';
 
 import 'package:test/test.dart';
 
 void main() {
-  final initialTime = DateTime(2000);
+  //final initialTime = DateTime(2000);
   final elapseBy = const SimDuration(days: 1);
-
+/*
   test('should set initial time', () {
     expect(Simulator().getClock(initialTime).now(), initialTime);
   });
-
+*/
   group('elapseBlocking', () {
     test('should elapse time without calling timers', () {
       Timer(elapseBy ~/ 2, neverCalled);
@@ -594,7 +593,7 @@ void main() {
       });
     });
   });
-
+/*
   group('clock', () {
     test('updates following elapse()', () {
       Simulator().run((async) {
@@ -643,11 +642,14 @@ void main() {
       });
     });
   });
+  */
 }
 
+/*
 /// Returns a matcher that asserts that a [DateTime] is within 100ms of
 /// [expected].
 Matcher _closeToTime(DateTime expected) => predicate(
     (actual) =>
         expected.difference(actual as DateTime).inMilliseconds.abs() < 100,
     'is close to $expected');
+*/

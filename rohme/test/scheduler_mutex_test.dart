@@ -77,7 +77,10 @@ void expectNoOverlap( List<SimDuration> l1 , List<SimDuration> l2 )
 //
 void main() async {
   group('A group of tests', () {
+    bool beenHere = false;
     setUp(() {
+      if( !beenHere ) simulateModel( () { return Module('top'); });
+      beenHere = true;
     });
 
     test('Mutex Test', () async {

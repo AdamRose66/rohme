@@ -18,4 +18,3 @@ export 'primitives/access_type.dart';
 export 'primitives/fifo.dart';
 export 'primitives/semaphore.dart';
 export 'primitives/signal.dart';
-export 'primitives/sim_clock.dart';

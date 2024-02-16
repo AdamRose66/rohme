@@ -19,7 +19,6 @@ import 'register_map.dart';
 class HardWareTimer extends Module
 {
   // external connections
-  late final SimClockPort clock;
   late final SignalWritePort irq;
 
   // internal fields and registers
@@ -31,8 +30,7 @@ class HardWareTimer extends Module
 
   HardWareTimer( super.name , [super.parent] )
   {
-    // creat the ports used to communicate with the outside
-    clock = SimClockPort('clock',this);
+    // create the irq port used to communicate with the outside world
     irq = SignalWritePort('irq',this);
 
     // get the registers from the register map
@@ -84,20 +82,18 @@ class HardWareTimer extends Module
   // timer has not been stopped, it creates a delta cycle glitch on the irq
   Future<bool> timerLoop() async
   {
-    bool clockOk = await clock.delay( _time );
+    await clockDelay( _time );
 
-    if( clockOk && !_stop ) {
-      _elapsed++;
-
-      await irq.nba( 1 );
-      await irq.nba( 0 );
-
-      return true;
-    }
-    else
-    {
+    if( _stop ) {
       return false;
     }
+
+    _elapsed++;
+
+    await irq.nba( 1 );
+    await irq.nba( 0 );
+
+    return true;
   }
 
   // called when we see a write to CONTROL.STOP

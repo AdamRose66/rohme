@@ -17,7 +17,9 @@ import '../modelling/module.dart';
 import '../simulator.dart';
 
 /// the simulator singleton
-Simulator simulator = Simulator();
+Simulator get simulator => _simulator!;
+
+late final Simulator? _simulator;
 
 /// the top level module singleton
 late final Module top;
@@ -62,8 +64,11 @@ late final Module top;
 /// by [simulator]. So the top level module has to be created inside [simulator]
 /// using createTop.
 Future<void> simulateModel( Module Function() createTop ,
-                           [SimDuration duration = const SimDuration(seconds:1)] ) async
+                           { SimDuration clockPeriod = const SimDuration( picoseconds : 1 ) ,
+                             SimDuration duration = const SimDuration(seconds:1) } ) async
 {
+  _simulator = Simulator( clockPeriod : clockPeriod );
+
   simulator.run( (async) {
     top = createTop();
 

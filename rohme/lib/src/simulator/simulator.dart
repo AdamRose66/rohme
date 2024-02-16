@@ -25,38 +25,12 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
 
 import 'sim_duration.dart';
 
-/// waits n clock ticks
-Future<void> clockDelay( int n ) async
-{
-  await Future.delayed( Zone.current[#clockPeriod] * n  );
-}
-
 /// The type of a microtask callback.
 typedef _Microtask = void Function();
-
-/// Runs [callback] in a [Zone] where all asynchrony is controlled by an
-/// instance of [Simulator].
-///
-/// All [Future]s, [Stream]s, [Timer]s, microtasks, and other time-based
-/// asynchronous features used within [callback] are controlled by calls to
-/// [Simulator.elapse] rather than the passing of real time.
-///
-/// The [`clock`][] property will be set to a clock that reports the fake
-/// elapsed time. By default, it starts at the time [simulate] was created
-/// (according to [`clock.now()`][]), but this can be controlled by passing
-/// [initialTime].
-///
-/// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
-/// [`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
-///
-/// Returns the result of [callback].
-T simulate<T>(T Function(Simulator async) callback, {DateTime? initialTime}) =>
-    Simulator(initialTime: initialTime).run(callback);
 
 /// A clone of FakeAsync, that mocks out the passage of time within a [Zone].
 ///
@@ -70,8 +44,8 @@ T simulate<T>(T Function(Simulator async) callback, {DateTime? initialTime}) =>
 /// This class uses [SimDuration] to allow finder grained time resolution than
 /// is provided by FakeAsync and [Duration].
 class Simulator {
-  /// The value of [clock] within [run].
-  late final Clock _clock;
+  /// the zone that all simulator processes are run in.
+  late final Zone zone;
 
   /// The amount of fake time that's elapsed since this [Simulator] was
   /// created.
@@ -82,8 +56,11 @@ class Simulator {
   /// trace in [Simulator.pendingTimersDebugString].
   final bool includeTimerStackTrace;
 
-  /// The notional clock period for this Simulator
-  final SimDuration clockPeriod;
+  /// The notional clock period for this Simulator. Used by [clockDelay].
+  SimDuration clockPeriod;
+
+  /// the name of this simulator
+  final String name;
 
   /// The number of clock ticks elapsed since start of simulation
   int get elapsedTicks => _elapsed.inPicoseconds ~/ clockPeriod.inPicoseconds;
@@ -106,58 +83,51 @@ class Simulator {
   List<String> get pendingTimersDebugString =>
       pendingTimers.map((timer) => timer.debugString).toList(growable: false);
 
-  /// The number of active periodic timers created within a call to [run] or
-  /// [simulate].
+  /// The number of active periodic timers created within a call to [run].
   int get periodicTimerCount =>
       _timers.where((timer) => timer.isPeriodic).length;
 
-  /// The number of active non-periodic timers created within a call to [run] or
-  /// [simulate].
+  /// The number of active non-periodic timers created within a call to [run]
   int get nonPeriodicTimerCount =>
       _timers.where((timer) => !timer.isPeriodic).length;
 
-  /// The number of pending microtasks scheduled within a call to [run] or
-  /// [simulate].
+  /// The number of pending microtasks scheduled within a call to [run]
   int get microtaskCount => _microtasks.length;
 
   /// Creates a [Simulator].
   ///
-  /// Within [run], the [`clock`][] property will start at [initialTime] and
-  /// move forward as fake time elapses.
+  /// A Zone is forked here, for use later in [run].
   ///
-  /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
+  /// The [zone] specifies local implementations of createTimer,
+  /// createPeriodicTimer and scheduleMicrotask.
   ///
-  /// Note: it's usually more convenient to use [simulate] rather than creating
-  /// a [Simulator] object and calling [run] manually.
+  /// The [clockPeriod] and this, and name are passed into the simulator's
+  /// [zone] as zone values.
   Simulator({this.clockPeriod = const SimDuration( picoseconds : 1 ),
-             DateTime? initialTime,
-             this.includeTimerStackTrace = true}) {
-    final nonNullInitialTime = initialTime ?? clock.now();
-    _clock = Clock(() => nonNullInitialTime.add(elapsed));
+             this.includeTimerStackTrace = true ,
+             this.name = 'simulator'})
+  {
+    zone = Zone.current.fork(
+      zoneValues: { #clockPeriod: clockPeriod ,
+                    #simulator: this ,
+                    #name: name } ,
+      specification: ZoneSpecification(
+      createTimer: (_, __, ___, duration, callback) =>
+        _createTimer(duration, callback, false),
+      createPeriodicTimer: (_, __, ___, duration, callback) =>
+        _createTimer(duration, callback, true),
+      scheduleMicrotask: (_, __, ___, microtask) =>
+        _microtasks.add(microtask))
+    );
   }
-
-  /// Returns a fake [Clock] whose time can is elapsed by calls to [elapse] and
-  /// [elapseBlocking].
-  ///
-  /// The returned clock starts at [initialTime] plus the fake time that's
-  /// already been elapsed. Further calls to [elapse] and [elapseBlocking] will
-  /// advance the clock as well.
-  ///
-  /// Note that it's usually easier to use the top-level [`clock`][] property.
-  /// Only call this function if you want a different [initialTime] than the
-  /// default.
-  ///
-  /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
-  Clock getClock(DateTime initialTime) =>
-      Clock(() => initialTime.add(_elapsed));
 
   /// Simulates the asynchronous passage of time.
   ///
   /// Throws an [ArgumentError] if [SimDuration] is negative. Throws a [StateError]
   /// if a previous call to [elapse] has not yet completed.
   ///
-  /// Any timers created within [run] or [simulate] will fire if their time is
-  /// within [duration]. The microtask queue is processed before and after each
+  /// Any timers created within [run] will fire if their time is within
+  /// [duration]. The microtask queue is processed before and after each
   /// timer fires.
   void elapse(SimDuration duration) {
     if (duration.inPicoseconds < 0) {
@@ -195,31 +165,12 @@ class Simulator {
   /// asynchronous features used within [callback] are controlled by calls to
   /// [elapse] rather than the passing of real time.
   ///
-  /// The [`clock`][] property will be set to a clock that reports the fake
-  /// elapsed time. By default, it starts at the time the [Simulator] was
-  /// created (according to [`clock.now()`][]), but this can be controlled by
-  /// passing `initialTime` to [Simulator.new].
-  ///
-  /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
-  /// [`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
-  ///
   /// Calls [callback] with `this` as argument and returns its result.
   ///
-  /// Note: it's usually more convenient to use [simulate] rather than creating
-  /// a [Simulator] object and calling [run] manually.
-  T run<T>(T Function(Simulator self) callback) =>
-      runZoned(() => withClock(_clock, () => callback(this)),
-          zoneValues: {#clockPeriod: clockPeriod} ,
-          zoneSpecification: ZoneSpecification(
-              createTimer: (_, __, ___, duration, callback) =>
-                  _createTimer(duration, callback, false),
-              createPeriodicTimer: (_, __, ___, duration, callback) =>
-                  _createTimer(duration, callback, true),
-              scheduleMicrotask: (_, __, ___, microtask) =>
-                  _microtasks.add(microtask)));
+  T run<T>(T Function(Simulator self) callback) => zone.run( () => callback( this ) );
 
-  /// Runs all pending microtasks scheduled within a call to [run] or
-  /// [simulate] until there are no more microtasks scheduled.
+  /// Runs all pending microtasks scheduled within a call to [run] until there
+  /// are no more microtasks scheduled.
   ///
   /// Does not run timers.
   void flushMicrotasks() {
@@ -293,6 +244,51 @@ class Simulator {
   void _elapseTo(SimDuration to) {
     if (to > _elapsed) _elapsed = to;
   }
+
+  /// removes all timers for which selector( timer.zone ) is true
+  Set<FakeTimer> suspend( Zone zone , bool Function( Zone ) selector )
+  {
+    Set<FakeTimer> selectedTimers = <FakeTimer>{};
+
+    _timers.removeWhere( ( timer ) {
+      bool selected = selector( timer.zone );
+      if( selected ) selectedTimers.add( timer );
+      return selected;
+    });
+
+    return selectedTimers;
+  }
+
+  /// adds [suspendedTimers] back into _timers.
+  ///
+  /// Checks that no timer in [suspendedTimers] is in the past. If it is,
+  /// throws TimerNotInFuture.
+  void resume( Set<FakeTimer> suspendedTimers )
+  {
+    // check we're not trying to resume a timer in the past
+    // ignore: avoid_function_literals_in_foreach_calls
+    suspendedTimers.forEach( ( timer ) {
+      if( timer._nextCall < elapsed )
+      {
+        throw TimerNotInFuture( elapsed , timer._nextCall );
+      }
+    });
+
+    _timers.addAll( suspendedTimers );
+  }
+}
+
+class TimerNotInFuture implements Exception
+{
+  SimDuration elapsed , nextCall;
+
+  TimerNotInFuture( this.elapsed , this.nextCall );
+
+  @override
+  String toString()
+  {
+    return 'Current time is $elapsed , so cannot schedule timer at $nextCall, which is in the past';
+  }
 }
 
 /// An implementation of [Timer] that's controlled by a [Simulator].
@@ -326,6 +322,9 @@ class FakeTimer implements Timer {
   StackTrace get creationStackTrace => _creationStackTrace!;
   final StackTrace? _creationStackTrace;
 
+  /// The zone in which this time was created
+  final Zone zone = Zone.current;
+
   var _tick = 0;
 
   @override
@@ -356,11 +355,17 @@ class FakeTimer implements Timer {
     if (isPeriodic) {
       // ignore: avoid_dynamic_calls
       _callback(this);
-      _nextCall += duration;
+      reschedule( duration );
     } else {
       cancel();
       // ignore: avoid_dynamic_calls
       _callback();
     }
+  }
+
+  /// increments _nextCall by duration
+  void reschedule( SimDuration duration )
+  {
+    _nextCall += duration;
   }
 }
