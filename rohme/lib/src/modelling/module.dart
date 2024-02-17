@@ -80,19 +80,27 @@ class Module extends NamedComponent
     }
   }
 
-  /// Override this asynchronous method to add behaviour to a [Module].
+  /// Override this method to add behaviour to a [Module].
   /// ```dart
-  /// void run() async
+  /// void run()
+  /// {
+  ///   calculateSum();
+  /// }
+  /// Future<void> calculateSum() async
+  /// {
   ///   await x = getPort.get();
   ///   await y = getPort.get();
-  ///   await delay( 10 );
+  ///   await clockDelay( 10 );
   ///   int z = x + y;
   ///   await busPort.write( 0x1000 , z );
   /// }
-  void run() async {}
+  void run() {}
 }
 
 /// A generic module-aware visitor pattern used by [Simulator]
+///
+/// Visits m and all all its recursive children in depth first order, calling
+/// [topDown] as it descends and [bottomUp] as it pops back up.
 void visit( Module m , {void Function( Module)? topDown, void Function( Module)? bottomUp } ) async
 {
   topDown?.call( m );

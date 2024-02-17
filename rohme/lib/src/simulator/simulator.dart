@@ -34,21 +34,26 @@ typedef _Microtask = void Function();
 
 /// A clone of FakeAsync, that mocks out the passage of time within a [Zone].
 ///
-/// Test code can be passed as a callback to [run], which causes it to be run in
-/// a [Zone] which fakes timer and microtask creation, such that they are run
-/// during calls to [elapse] which simulates the asynchronous passage of time.
+/// Time consuming code to be simulated is passed to [run], which causes the
+/// the code to be run in a [Zone] which fakes timer and microtask creation.
 ///
-/// The synchronous passage of time (as from blocking or expensive calls) can
-/// also be simulated using [elapseBlocking].
+/// The code is actually executed by an Event wheel implemented in [elapse].
+/// ```dart
+/// Simulator simulator = Simulator();
 ///
-/// This class uses [SimDuration] to allow finder grained time resolution than
+/// simulator.run( ( simulator ) async {
+///   await Future.delayed( SimDuration( picoseconds : 10 ) );
+///  });
+///
+///  simulator.elapse( SimDuration( picoseconds : 1000 ) );
+/// ```
+/// This class uses [SimDuration] to allow finer grained time resolution than
 /// is provided by FakeAsync and [Duration].
 class Simulator {
   /// the zone that all simulator processes are run in.
   late final Zone zone;
 
-  /// The amount of fake time that's elapsed since this [Simulator] was
-  /// created.
+  /// The amount of time that has elapsed since the beginning of the simulation.
   SimDuration get elapsed => _elapsed;
   var _elapsed = SimDuration.zero;
 
@@ -65,7 +70,7 @@ class Simulator {
   /// The number of clock ticks elapsed since start of simulation
   int get elapsedTicks => _elapsed.inPicoseconds ~/ clockPeriod.inPicoseconds;
 
-  /// The fake time at which the current call to [elapse] will finish running.
+  /// The time at which the current call to [elapse] will finish running.
   ///
   /// This is `null` if there's no current call to [elapse].
   SimDuration? _elapsingTo;
@@ -73,7 +78,7 @@ class Simulator {
   /// Tasks that are scheduled to run when fake time progresses.
   final _microtasks = Queue<_Microtask>();
 
-  /// All timers created within [run].
+  /// A set consisting of the pending but not executed timers.
   final _timers = <FakeTimer>{};
 
   /// All the current pending timers.
@@ -101,7 +106,7 @@ class Simulator {
   /// The [zone] specifies local implementations of createTimer,
   /// createPeriodicTimer and scheduleMicrotask.
   ///
-  /// The [clockPeriod] and this, and name are passed into the simulator's
+  /// The [clockPeriod], this, and [name] are passed into the simulator's
   /// [zone] as zone values.
   Simulator({this.clockPeriod = const SimDuration( picoseconds : 1 ),
              this.includeTimerStackTrace = true ,
@@ -162,8 +167,8 @@ class Simulator {
   /// Runs [callback] in a [Zone] where all asynchrony is controlled by `this`.
   ///
   /// All [Future]s, [Stream]s, [Timer]s, microtasks, and other time-based
-  /// asynchronous features used within [callback] are controlled by calls to
-  /// [elapse] rather than the passing of real time.
+  /// asynchronous features used within [callback] are simulated by [elapse]
+  /// rather than the passing of real time.
   ///
   /// Calls [callback] with `this` as argument and returns its result.
   ///

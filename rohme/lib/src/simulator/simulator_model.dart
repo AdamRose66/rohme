@@ -29,8 +29,8 @@ late final Module top;
 /// It has a [Simulator] singleton and uses the [visit()] function to recurse
 /// through the [Module] hierarchy.
 //
-/// There are four phases. The first three are all synchronous. Only the last
-/// phase, the run phase, is asynchronous.
+/// There are four phases. Only the last phase, the run phase, is expected to
+/// spawn Futures.
 ///
 /// (1) Construction Phase
 /// This phase is an implicit phase, started by calling the constructor of the
@@ -52,13 +52,9 @@ late final Module top;
 /// the chain by [Port._doConnections].
 ///
 /// (4) Run Phase
-/// This is where the actual behaviour of the Modules is defined. The [Module.run]
-/// method is async, although it does not return a [Future]. It is expected that
-/// await is used in here to wait for time, for example:
-/// ```dart
-/// await Future.delayed( Duration( milliseconds : 10 ));
-/// ```
-/// or for any other Futures that make sense in this model.
+/// This is where the actual behaviour of the Modules is defined. Although
+/// the run method itself is synchronous, it is expected that await is used in
+/// async [Future]s called from the run method.
 ///
 /// Any interaction with the Dart scheduler has to be inside the [Zone] created
 /// by [simulator]. So the top level module has to be created inside [simulator]
