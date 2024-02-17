@@ -33,9 +33,8 @@ import 'module.dart';
 /// This class is used by the Rohme infrastructure. [Port] is the user visible
 /// class.
 ///
-abstract class PortBase extends NamedComponent
-{
-  PortBase( super.name , [super.parent] );
+abstract class PortBase extends NamedComponent {
+  PortBase(super.name, [super.parent]);
 
   /// the entry point used by the infrastructure to do the port connections
   void doConnections();
@@ -77,17 +76,15 @@ abstract class PortBase extends NamedComponent
 /// Such a mechanism can be used ( and has been used in SystemC ) as the basis
 /// upon which to build RTL signal interfaces.
 ///
-class Port<IF extends Object> extends PortBase
-{
-  Port( super.name , [super.parent] );
+class Port<IF extends Object> extends PortBase {
+  Port(super.name, [super.parent]);
 
   /// The Port to which this port is connected.
   Port<IF>? connectedTo;
 
   /// Connects to other ports of type Port<TO_IF extends IF> ( because of
   /// generic invariance ). Compile error if IF types are not compatible
-  operator<=( Port<IF> p )
-  {
+  operator <=(Port<IF> p) {
     connectedTo = p;
 
     //
@@ -96,9 +93,9 @@ class Port<IF extends Object> extends PortBase
     //
     p._isStartPort = false;
 
-    if( debugConnections )
-    {
-      print('Connections Debug: Connecting $fullName type $runtimeType to ${p.fullName} type ${p.runtimeType}');
+    if (debugConnections) {
+      print(
+          'Connections Debug: Connecting $fullName type $runtimeType to ${p.fullName} type ${p.runtimeType}');
     }
   }
 
@@ -108,8 +105,7 @@ class Port<IF extends Object> extends PortBase
   /// ```
   /// where p does *not* implement IF
   ///
-  IF call()
-  {
+  IF call() {
     return portIf;
   }
 
@@ -125,9 +121,8 @@ class Port<IF extends Object> extends PortBase
   /// where read is a method in IF
   ///
   @override
-  dynamic noSuchMethod( Invocation invocation )
-  {
-    return reflect( portIf ).delegate( invocation );
+  dynamic noSuchMethod(Invocation invocation) {
+    return reflect(portIf).delegate(invocation);
   }
 
   /// Ends the port connection chain by connecting to a final implementation.
@@ -136,55 +131,48 @@ class Port<IF extends Object> extends PortBase
   ///
   /// Also used internally by _doConnections(.)
   ///
-  void implementedBy( IF to , [bool? debug] )
-  {
+  void implementedBy(IF to, [bool? debug]) {
     debug ??= debugConnections;
 
     _if = to;
 
-    if( debug )
-    {
+    if (debug) {
       String toName = 'unknown';
 
-      if( to is NamedComponent )
-      {
+      if (to is NamedComponent) {
         toName = to.fullName;
       }
 
-      print('Connections Debug: Port $fullName type $runtimeType is implemented by $toName type $to.runtimeType');
+      print(
+          'Connections Debug: Port $fullName type $runtimeType is implemented by $toName type $to.runtimeType');
     }
   }
 
   /// Connects interfaces backwards along the port connection chain
   @override
-  void doConnections()
-  {
-    if( connectedTo != null )
-    {
-      _doConnections( connectedTo! , debugConnections );
+  void doConnections() {
+    if (connectedTo != null) {
+      _doConnections(connectedTo!, debugConnections);
     }
   }
 
   /// Recurses forwards along the port connection chain, using implementedBy to
   /// copy the final implementation backwards along the chain as it returns
-  void _doConnections( Port<IF> to , bool debug )
-  {
-    if( _if != null )
-    {
+  void _doConnections(Port<IF> to, bool debug) {
+    if (_if != null) {
       // we've been here before, so don't recurse again
       return;
     }
 
-    if( to.connectedTo != null )
-    {
-      to._doConnections( to.connectedTo! , debug );
+    if (to.connectedTo != null) {
+      to._doConnections(to.connectedTo!, debug);
     }
 
     // assign from the 'to' end of the connection chain backwards along the chain
     // the net effect is that an interface moves backwards along the chain of
     // connection from the furthest "connectedTo" to the nearest "connectedFrom"
 
-    implementedBy( connectedTo!.portIf , debug );
+    implementedBy(connectedTo!.portIf, debug);
   }
 
   /// The actual underlying interface, ultimately sourced from the end of the
@@ -193,11 +181,9 @@ class Port<IF extends Object> extends PortBase
   /// Throws [ProbableConnectionError] if a module attempts to get the port
   /// when there is no interface.
   ///
-  IF get portIf
-  {
-    if( _if == null )
-    {
-      throw ProbableConnectionError( this );
+  IF get portIf {
+    if (_if == null) {
+      throw ProbableConnectionError(this);
     }
     return _if!;
   }
@@ -206,15 +192,13 @@ class Port<IF extends Object> extends PortBase
 }
 
 /// Used by [Port] when there is no interface on this Port.
-class ProbableConnectionError extends Error
-{
+class ProbableConnectionError extends Error {
   PortBase p;
 
-  ProbableConnectionError( this.p );
+  ProbableConnectionError(this.p);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'Port Connection Error: null interface on $p.fullName type $runtimeType. This indicates some kind of connection error.';
   }
 }

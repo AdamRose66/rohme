@@ -16,52 +16,49 @@ import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('simple_test' , () {
+  test('simple_test', () {
     config['test'] = true;
     bool test = getConfig('test');
-    expect( true , equals( test ) );
+    expect(true, equals(test));
   });
-  test('wrong_name_test' , () {
+  test('wrong_name_test', () {
     bool success = true;
-    try
-    {
+    try {
       bool test1 = getConfig('test1');
       test1;
-    }
-    catch( e )
-    {
+    } catch (e) {
       success = false;
       print('$e');
     }
-    expect( false , equals( success ) );
+    expect(false, equals(success));
   });
-  test('wrong_type_test' , () {
+  test('wrong_type_test', () {
     bool success = true;
-    try
-    {
+    try {
       int test1 = getConfig('test');
       test1;
-    }
-    catch( e )
-    {
+    } catch (e) {
       success = false;
       print('$e');
     }
-    expect( false , equals( success ) );
+    expect(false, equals(success));
   });
-  test('function_test' , () {
-    config['a.c'] = ( int n ) { print('config says $n'); return n; };
+  test('function_test', () {
+    config['a.c'] = (int n) {
+      print('config says $n');
+      return n;
+    };
 
-    int n = getConfig<int Function(int)>('a.c')( 3 );
-    expect( 3 , equals( n ) );
+    int n = getConfig<int Function(int)>('a.c')(3);
+    expect(3, equals(n));
   });
-  test('default_value_test' , () {
-    int i = getConfig<int>('la.la.land' , defaultValue : 7 );
+  test('default_value_test', () {
+    int i = getConfig<int>('la.la.land', defaultValue: 7);
 
     print('default value is $i');
-    expect( 7 , equals( i ) );
-  } );
-  test('nothing_test' , () {
+    expect(7, equals(i));
+  });
+  test('nothing_test', () {
     config['nothing'] = null;
 
     Object? nothingOk = getConfigNullable('nothing');
@@ -69,16 +66,13 @@ void main() {
     print('nothing is $nothingOk');
 
     bool success = true;
-    try
-    {
+    try {
       Object nothingNotOk = getConfig('nothing');
       nothingNotOk;
-    }
-    catch( e )
-    {
+    } catch (e) {
       success = false;
       print('$e');
     }
-    expect( false , equals( success ) );
+    expect(false, equals(success));
   });
 }

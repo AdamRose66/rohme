@@ -21,33 +21,29 @@ import 'dart:async';
 /// Note that the code to create the Timers is identical, but the interpretation
 /// is different in the different [ClockZone]s
 
-void main()
-{
-  simulateModel( () => Top('top') ,
-            clockPeriod : SimDuration( picoseconds : 10 ) ,
-            duration : SimDuration( picoseconds : 1000 ) );
+void main() {
+  simulateModel(() => Top('top'),
+      clockPeriod: SimDuration(picoseconds: 10),
+      duration: SimDuration(picoseconds: 1000));
 }
 
-class Top extends Module
-{
+class Top extends Module {
   late final ClockZone clockZone1;
   late final ClockZone clockZone2;
 
-  Top( super.name )
-  {
-    clockZone1 = ClockZone( 'zone1' , simulator.zone , 2 );
-    clockZone2 = ClockZone( 'zone2' , clockZone1.zone , 2 );
+  Top(super.name) {
+    clockZone1 = ClockZone('zone1', simulator.zone, 2);
+    clockZone2 = ClockZone('zone2', clockZone1.zone, 2);
   }
 
   @override
-  void run()
-  {
-    clockZone1.run( ( clockZone ) {
-      Timer.periodic( tickTime( 5 ) , ( timer ) => print('$clockZone') );
+  void run() {
+    clockZone1.run((clockZone) {
+      Timer.periodic(tickTime(5), (timer) => print('$clockZone'));
     });
 
-    clockZone2.run( ( clockZone ) {
-      Timer.periodic( tickTime( 5 ) , ( timer ) => print('$clockZone') );
+    clockZone2.run((clockZone) {
+      Timer.periodic(tickTime(5), (timer) => print('$clockZone'));
     });
   }
 }

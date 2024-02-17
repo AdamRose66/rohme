@@ -1,103 +1,98 @@
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
-void main()
-{
+void main() {
   group('Sim Duration Test', () {
     test('Sim Duration test', () {
-      final onePicoSecond = const SimDuration( picoseconds : 1 );
-      final oneNanoSecond = const SimDuration( nanoseconds : 1 );
-      final oneMicroSecond = const SimDuration( microseconds : 1 );
-      final twoPicoSeconds = const SimDuration( picoseconds : 2 );
-      final twoNanoSeconds = const SimDuration( nanoseconds : 2 );
+      final onePicoSecond = const SimDuration(picoseconds: 1);
+      final oneNanoSecond = const SimDuration(nanoseconds: 1);
+      final oneMicroSecond = const SimDuration(microseconds: 1);
+      final twoPicoSeconds = const SimDuration(picoseconds: 2);
+      final twoNanoSeconds = const SimDuration(nanoseconds: 2);
 
-      expect( twoPicoSeconds , greaterThan( onePicoSecond ) );
-      expect( onePicoSecond * 2 , equals( twoPicoSeconds ) );
+      expect(twoPicoSeconds, greaterThan(onePicoSecond));
+      expect(onePicoSecond * 2, equals(twoPicoSeconds));
 
-      expect( oneMicroSecond * .002 , equals( twoNanoSeconds ) );
+      expect(oneMicroSecond * .002, equals(twoNanoSeconds));
 
       final str = '${onePicoSecond + oneNanoSecond + oneMicroSecond}';
-      print( str );
-      expect( str , equals('0:00:00.000001.001001') );
+      print(str);
+      expect(str, equals('0:00:00.000001.001001'));
     });
     test('Duration test', () {
-      final d = Duration( microseconds : 1 );
-      final onePicoSecond = const SimDuration( picoseconds : 1 );
-      final same = SimDuration( microseconds : 1 );
+      final d = Duration(microseconds: 1);
+      final onePicoSecond = const SimDuration(picoseconds: 1);
+      final same = SimDuration(microseconds: 1);
       final less = same - onePicoSecond;
       final more = same + onePicoSecond;
 
       print('$d $less $same $more');
 
       print('same test');
-      compare( d , same , 0 ,
-               [true,true,true,false,false] ,
-               [true,true,true,false,false] );
+      compare(d, same, 0, [true, true, true, false, false],
+          [true, true, true, false, false]);
 
       print('more test');
-      compare( d , more , 1 ,
-              [true,false,true,false,true] ,
-              [false,true,false,true,false] );
+      compare(d, more, 1, [true, false, true, false, true],
+          [false, true, false, true, false]);
 
       print('less test');
-      compare( d , less , -1 ,
-              [false,true,false,true,false] ,
-              [false,false,true,false,true] );
-
+      compare(d, less, -1, [false, true, false, true, false],
+          [false, false, true, false, true]);
     });
   });
   test('Constructor Test', () {
-    final onePicoSecond = const SimDuration( picoseconds : 1 );
-    final oneNanoSecond = const SimDuration( nanoseconds : 1 );
-    final oneMicroSecond = const SimDuration( microseconds : 1 );
-    final oneMilliSecond = const SimDuration( milliseconds : 1 );
-    final oneSecond = const SimDuration( seconds : 1 );
-    final oneMinute = const SimDuration( minutes : 1 );
-    final oneHour = const SimDuration( hours : 1 );
-    final oneDay = const SimDuration( days : 1 );
+    final onePicoSecond = const SimDuration(picoseconds: 1);
+    final oneNanoSecond = const SimDuration(nanoseconds: 1);
+    final oneMicroSecond = const SimDuration(microseconds: 1);
+    final oneMilliSecond = const SimDuration(milliseconds: 1);
+    final oneSecond = const SimDuration(seconds: 1);
+    final oneMinute = const SimDuration(minutes: 1);
+    final oneHour = const SimDuration(hours: 1);
+    final oneDay = const SimDuration(days: 1);
 
     print('oneMilliSecond $oneMilliSecond');
 
-    expect( oneNanoSecond , onePicoSecond * 1000 );
-    expect( oneMicroSecond , onePicoSecond * 1000 * 1000 );
-    expect( oneMilliSecond , onePicoSecond * 1000 * 1000 * 1000 );
-    expect( oneSecond , onePicoSecond * 1000 * 1000 * 1000 * 1000 );
-    expect( oneMinute , onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 );
-    expect( oneHour , onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 * 60 );
-    expect( oneDay , onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 * 60 * 24 );
+    expect(oneNanoSecond, onePicoSecond * 1000);
+    expect(oneMicroSecond, onePicoSecond * 1000 * 1000);
+    expect(oneMilliSecond, onePicoSecond * 1000 * 1000 * 1000);
+    expect(oneSecond, onePicoSecond * 1000 * 1000 * 1000 * 1000);
+    expect(oneMinute, onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60);
+    expect(oneHour, onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 * 60);
+    expect(oneDay, onePicoSecond * 1000 * 1000 * 1000 * 1000 * 60 * 60 * 24);
 
-    expect( oneDay.inDays , 1 );
-    expect( oneDay.inHours , 24 );
-    expect( oneHour.inMinutes , 60 );
-    expect( oneMinute.inSeconds , 60 );
-    expect( oneMicroSecond.inNanoseconds , 1000 );
+    expect(oneDay.inDays, 1);
+    expect(oneDay.inHours, 24);
+    expect(oneHour.inMinutes, 60);
+    expect(oneMinute.inSeconds, 60);
+    expect(oneMicroSecond.inNanoseconds, 1000);
 
     final minusOnePicosecond = -onePicoSecond;
 
-    expect( minusOnePicosecond.inPicoseconds , -1 );
-    expect( minusOnePicosecond.isNegative , true );
-    expect( minusOnePicosecond.abs() , onePicoSecond );
+    expect(minusOnePicosecond.inPicoseconds, -1);
+    expect(minusOnePicosecond.isNegative, true);
+    expect(minusOnePicosecond.abs(), onePicoSecond);
 
-    expect( onePicoSecond + Duration( seconds: 1 ) , SimDuration( seconds : 1 , picoseconds : 1 ) );
+    expect(onePicoSecond + Duration(seconds: 1),
+        SimDuration(seconds: 1, picoseconds: 1));
   });
-
 }
 
-void compare( Duration d , SimDuration simD , int comparison , List<bool> durationToSim , List<bool> simToDuration )
-{
-  expect( simD.compareTo( d ) , comparison );
+void compare(Duration d, SimDuration simD, int comparison,
+    List<bool> durationToSim, List<bool> simToDuration) {
+  expect(simD.compareTo(d), comparison);
 
   print('comparing Duration $d to SimDuration $simD using $durationToSim');
-  expect( d == simD , durationToSim[0] );
-  expect( SimDuration.fromDuration( d ) >= simD , durationToSim[1] );
-  expect( SimDuration.fromDuration( d ) <= simD , durationToSim[2] );
-  expect( SimDuration.fromDuration( d ) > simD , durationToSim[3] );
-  expect( SimDuration.fromDuration( d ) < simD , durationToSim[4] );
+  expect(d == simD, durationToSim[0]);
+  expect(SimDuration.fromDuration(d) >= simD, durationToSim[1]);
+  expect(SimDuration.fromDuration(d) <= simD, durationToSim[2]);
+  expect(SimDuration.fromDuration(d) > simD, durationToSim[3]);
+  expect(SimDuration.fromDuration(d) < simD, durationToSim[4]);
 
   print('comparing SimDuration $simD to Duration $d using $simToDuration');
-  expect( simD == d , simToDuration[0] );
-  expect( simD >= d , simToDuration[1] );
-  expect( simD <= d , simToDuration[2] );
-  expect( simD > d , simToDuration[3] );
-  expect( simD < d , simToDuration[4] );
+  expect(simD == d, simToDuration[0]);
+  expect(simD >= d, simToDuration[1]);
+  expect(simD <= d, simToDuration[2]);
+  expect(simD > d, simToDuration[3]);
+  expect(simD < d, simToDuration[4]);
 }

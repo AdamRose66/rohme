@@ -19,71 +19,63 @@ RegisterMap registerMap = RegisterMap('map');
 
 void main() async {
   group('A group of tests', () {
-    setUp(() {
-    });
+    setUp(() {});
 
     test('simple register test', () async {
-      Register rmapR0 = registerMap.addRegister('r0', 0x100 );
+      Register rmapR0 = registerMap.addRegister('r0', 0x100);
 
-      rmapR0.addField('a',(0,2));
-      rmapR0.addField('b',(4,9));
-      rmapR0.addField('c',(31,32));
+      rmapR0.addField('a', (0, 2));
+      rmapR0.addField('b', (4, 9));
+      rmapR0.addField('c', (31, 32));
 
-      registerMap[0x100].write( 0x1234 );
+      registerMap[0x100].write(0x1234);
       Register r0 = registerMap.getByName('r0');
 
       print('$r0');
-      expect( r0.peek() , 0x1234 & 0x1f3 );
+      expect(r0.peek(), 0x1234 & 0x1f3);
 
       bool ok;
 
       ok = true;
-      try
-      {
+      try {
         // ignore: unused_local_variable
         Register r1 = registerMap[0x9a];
-      }
-      on TypeError catch( e )
-      {
+      } on TypeError catch (e) {
         print('expected Error $e');
         ok = false;
       }
-      expect( ok , false );
+      expect(ok, false);
 
       ok = true;
-      try
-      {
+      try {
         // ignore: unused_local_variable
         Register r2 = registerMap.getByName('r2');
-      }
-      on TypeError catch( e )
-      {
+      } on TypeError catch (e) {
         print('expected Error $e');
         ok = false;
       }
-      expect( ok , false );
+      expect(ok, false);
 
-      Register r1 = registerMap.addRegister('r1',0x200,initialValue: 0xffffffff );
+      Register r1 =
+          registerMap.addRegister('r1', 0x200, initialValue: 0xffffffff);
 
-      registerMap[0x200].write( 0x5678 );
-      expect( registerMap[0x200].peek() , 0x5678 );
+      registerMap[0x200].write(0x5678);
+      expect(registerMap[0x200].peek(), 0x5678);
 
       registerMap.reset();
 
       print('$r1');
-      expect( registerMap[0x100].peek() , 0 );
-      expect( registerMap[0x200].peek() , 0xffffffff );
+      expect(registerMap[0x100].peek(), 0);
+      expect(registerMap[0x200].peek(), 0xffffffff);
 
       int count = 0;
-      for( int? addr = registerMap.map.firstKeyAfter( 0x99 );
-           addr != null && addr < 0x180;
-           addr = registerMap.map.firstKeyAfter( addr ) , count++ )
-      {
+      for (int? addr = registerMap.map.firstKeyAfter(0x99);
+          addr != null && addr < 0x180;
+          addr = registerMap.map.firstKeyAfter(addr), count++) {
         print('${addr.hex()} : ${registerMap[addr]}');
       }
 
-      expect( count , 1 );
-
+      expect(count, 1);
     });
   });
 }

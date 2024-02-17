@@ -19,15 +19,15 @@ import 'register_exceptions.dart';
 // To be done : handle different access types ( read only, write only , read write , etc etc )
 
 /// A base class used for [Register] and [Field]
-abstract class RegisterBase
-{
+abstract class RegisterBase {
   /// the name of the [Register] or [Field]
   final String name;
 
   /// the read callback
-  void Function( int )? onRead;
+  void Function(int)? onRead;
+
   /// the write callback
-  void Function( int )? onWrite;
+  void Function(int)? onWrite;
 
   /// read, write or ( by default ) readWrite
   ///
@@ -36,10 +36,10 @@ abstract class RegisterBase
   /// [onRead] or [onWrite] callbacks
   AccessType accessType;
 
-  RegisterBase( this.name , this.accessType );
+  RegisterBase(this.name, this.accessType);
 
   /// writes a value without side effects
-  void poke( int data );
+  void poke(int data);
 
   /// reads a value without side effects
   int peek();
@@ -47,28 +47,24 @@ abstract class RegisterBase
   /// Writes a value. Calls write callback if present
   ///
   /// Throws WritetoReadOnly if a Read only register is written to
-  void write( int data )
-  {
-    if( !accessType.isWriteAccess() )
-    {
-      throw WritetoReadOnly( this );
+  void write(int data) {
+    if (!accessType.isWriteAccess()) {
+      throw WritetoReadOnly(this);
     }
-    poke( data );
-    onWrite?.call( peek() );
+    poke(data);
+    onWrite?.call(peek());
   }
 
   /// Reads a value. Calls read callback if present.
   ///
   /// If this is a write only register, return 0 and do not call [onRead]
-  int read()
-  {
-    if( !accessType.isReadAccess() )
-    {
+  int read() {
+    if (!accessType.isReadAccess()) {
       return 0;
     }
 
     int v = peek();
-    onRead?.call( v );
+    onRead?.call(v);
     return v;
   }
 }

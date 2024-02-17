@@ -15,97 +15,85 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
-void checkBottomUp( List<Module> moduleList )
-{
+void checkBottomUp(List<Module> moduleList) {
   var i = 0;
 
-  for( i = 0; i < moduleList.length - 1; i++ )
-  {
+  for (i = 0; i < moduleList.length - 1; i++) {
     bool foundParent = false;
 
-    for( var j = i + 1; j < moduleList.length && !foundParent; j++ )
-    {
-      if( moduleList[i].parent == moduleList[j] )
-      {
+    for (var j = i + 1; j < moduleList.length && !foundParent; j++) {
+      if (moduleList[i].parent == moduleList[j]) {
         foundParent = true;
       }
     }
 
-    expect( foundParent , equals( true ) );
+    expect(foundParent, equals(true));
   }
 
-  expect( moduleList[i].parent , equals( null ) );
+  expect(moduleList[i].parent, equals(null));
 }
 
-void checkTopDown( List<Module> moduleList )
-{
+void checkTopDown(List<Module> moduleList) {
   var i = 0;
 
-  expect( moduleList[0].parent , equals( null ) );
+  expect(moduleList[0].parent, equals(null));
 
-  for( i = 1; i < moduleList.length - 1; i++ )
-  {
+  for (i = 1; i < moduleList.length - 1; i++) {
     bool foundParent = false;
 
-    for( var j = i + 1; j < moduleList.length && !foundParent; j++ )
-    {
-      if( moduleList[i].parent == moduleList[j] )
-      {
+    for (var j = i + 1; j < moduleList.length && !foundParent; j++) {
+      if (moduleList[i].parent == moduleList[j]) {
         foundParent = true;
       }
     }
 
-    expect( foundParent , equals( false ) );
+    expect(foundParent, equals(false));
   }
 }
 
 void main() {
-  test('child_test' , () {
+  test('child_test', () {
     Module parent = Module('parent');
-    NamedComponent child = NamedComponent('child',parent);
+    NamedComponent child = NamedComponent('child', parent);
 
     print('child name $child.fullName');
-    expect( child.fullName, equals('parent.child') );
+    expect(child.fullName, equals('parent.child'));
   });
 
-  test('visit_test' , () {
+  test('visit_test', () {
     List<Module> topDownList = [];
     List<Module> bottomUpList = [];
 
     Module top = Module('top');
-    Module c1 = Module('c1',top);
-    Module c2 = Module('c2',top);
-    Module g1 = Module('g1',c1);
-    Module g2 = Module('g2',c1);
-    Module g3 = Module('g3',c2);
+    Module c1 = Module('c1', top);
+    Module c2 = Module('c2', top);
+    Module g1 = Module('g1', c1);
+    Module g2 = Module('g2', c1);
+    Module g3 = Module('g3', c2);
 
-    ( c1 , c2 , g1 , g2 , g3 );
+    (c1, c2, g1, g2, g3);
 
-    visit( top ,
-      topDown : ( Module m ) {
-        topDownList.add( m );
-      } ,
-      bottomUp : ( Module m ) {
-        bottomUpList.add( m );
-      }
-    );
+    visit(top, topDown: (Module m) {
+      topDownList.add(m);
+    }, bottomUp: (Module m) {
+      bottomUpList.add(m);
+    });
 
-    for( Module m in topDownList )
-    {
+    for (Module m in topDownList) {
       print('Top Down $m.fullName');
     }
 
-    for( Module m in bottomUpList ) {
+    for (Module m in bottomUpList) {
       print('bottom Up $m.fullName');
     }
 
-    checkBottomUp( bottomUpList );
-    checkTopDown( topDownList );
+    checkBottomUp(bottomUpList);
+    checkTopDown(topDownList);
 
-    expect( 6 , equals( topDownList.length ) );
-    expect( 6 , equals( bottomUpList.length ) );
+    expect(6, equals(topDownList.length));
+    expect(6, equals(bottomUpList.length));
 
-    expect( topDownList.length , equals( topDownList.toSet().length ) );
-    expect( bottomUpList.length , equals( bottomUpList.toSet().length ) );
+    expect(topDownList.length, equals(topDownList.toSet().length));
+    expect(bottomUpList.length, equals(bottomUpList.toSet().length));
   });
 }

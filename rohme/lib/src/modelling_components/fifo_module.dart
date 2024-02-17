@@ -19,8 +19,7 @@ import '../primitives/fifo.dart';
 ///
 /// It uses [Fifo] from the primitives library for the underlying implementation.
 ///
-class FifoModule<T> extends Module implements FifoPutIf<T> , FifoGetIf<T>
-{
+class FifoModule<T> extends Module implements FifoPutIf<T>, FifoGetIf<T> {
   /// An export which provides the FifoPutIf
   late final Port<FifoPutIf<T>> putExport;
 
@@ -37,38 +36,34 @@ class FifoModule<T> extends Module implements FifoPutIf<T> , FifoGetIf<T>
   //
   // The [size] is the maximum size of the buffer.
   //
-  FifoModule( super.name , super.parent , {duration = Duration.zero , int size = 1} )
-  {
-    _fifo = Fifo( fullName , duration:duration , size:size );
+  FifoModule(super.name, super.parent,
+      {duration = Duration.zero, int size = 1}) {
+    _fifo = Fifo(fullName, duration: duration, size: size);
 
-    putExport = Port('putExport',this);
-    getExport = Port('getExport',this);
+    putExport = Port('putExport', this);
+    getExport = Port('getExport', this);
 
-    putExport.implementedBy( this );
-    getExport.implementedBy( this );
+    putExport.implementedBy(this);
+    getExport.implementedBy(this);
   }
 
   @override
-  Future<void> put( T t ) async
-  {
-    await _fifo.put( t );
+  Future<void> put(T t) async {
+    await _fifo.put(t);
   }
 
   @override
-  Future<T> get() async
-  {
+  Future<T> get() async {
     return await _fifo.get();
   }
 
   @override
-  bool canPut()
-  {
+  bool canPut() {
     return _fifo.canPut();
   }
 
   @override
-  bool canGet()
-  {
+  bool canGet() {
     return _fifo.canGet();
   }
 }

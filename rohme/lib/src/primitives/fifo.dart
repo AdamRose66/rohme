@@ -16,12 +16,11 @@ import 'dart:collection';
 import 'dart:async';
 
 /// An abstract interface class for the put side of a [Fifo]
-abstract interface class FifoPutIf<T>
-{
+abstract interface class FifoPutIf<T> {
   /// An asynchronous put method.
   ///
   /// Completes when the implementer is able to accept the transaction [t].
-  Future<void> put( T t );
+  Future<void> put(T t);
 
   /// A synchronous canPut method
   ///
@@ -33,8 +32,7 @@ abstract interface class FifoPutIf<T>
 }
 
 /// An abstract interface class for the get side of a [Fifo]
-abstract interface class FifoGetIf<T>
-{
+abstract interface class FifoGetIf<T> {
   /// An asynchronous get method.
   ///
   /// Completes when the implementer has something to return.
@@ -50,8 +48,7 @@ abstract interface class FifoGetIf<T>
 }
 
 /// An asynchronous Fifo with configurable buffer size and delays
-class Fifo<T> implements FifoPutIf<T> , FifoGetIf<T>
-{
+class Fifo<T> implements FifoPutIf<T>, FifoGetIf<T> {
   /// the internal data storage
   final ListQueue<T> _data = ListQueue();
 
@@ -67,12 +64,10 @@ class Fifo<T> implements FifoPutIf<T> , FifoGetIf<T>
   ///
   final String name;
 
-  Fifo( this.name , {this.duration = Duration.zero , this.size = 1} )
-  {
-    if( duration != null ) print('$name constructed with duration $duration');
-    if( size < 1 )
-    {
-      throw FifoSizeError( size );
+  Fifo(this.name, {this.duration = Duration.zero, this.size = 1}) {
+    if (duration != null) print('$name constructed with duration $duration');
+    if (size < 1) {
+      throw FifoSizeError(size);
     }
   }
 
@@ -82,45 +77,39 @@ class Fifo<T> implements FifoPutIf<T> , FifoGetIf<T>
 
   /// An asynchronous put method, which unblocks when there is room in the fifo
   @override
-  Future<void> put( T t ) async
-  {
-    if( !canPut() )
-    {
+  Future<void> put(T t) async {
+    if (!canPut()) {
       await _justConsumed.future;
     }
 
-    if( duration != null )
-    {
-      await Future.delayed( duration! );
+    if (duration != null) {
+      await Future.delayed(duration!);
     }
 
-    _data.addFirst( t );
+    _data.addFirst(t);
 
-    if( !_justSet.isCompleted ) _justSet.complete();
+    if (!_justSet.isCompleted) _justSet.complete();
     _justConsumed = Completer();
   }
 
   /// A synchronous get method, which unblocks when there is something to be got from the fifo.
   ///
   @override
-  Future<T> get() async
-  {
-    if( !canGet() )
-    {
+  Future<T> get() async {
+    if (!canGet()) {
       await _justSet.future;
     }
 
     // immediately block other gets
     T newT = _data.last;
 
-    if( duration != null )
-    {
-        await Future.delayed( duration! );
+    if (duration != null) {
+      await Future.delayed(duration!);
     }
 
     _data.removeLast();
 
-    if( !_justConsumed.isCompleted ) _justConsumed.complete();
+    if (!_justConsumed.isCompleted) _justConsumed.complete();
     _justSet = Completer();
 
     return newT;
@@ -134,14 +123,12 @@ class Fifo<T> implements FifoPutIf<T> , FifoGetIf<T>
 }
 
 /// An exception thrown when trying to create a Fifo of size less than one
-class FifoSizeError extends Error
-{
+class FifoSizeError extends Error {
   int size;
-  FifoSizeError( this.size );
+  FifoSizeError(this.size);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'size must be greater or equal to one, but $size was observed';
   }
 }

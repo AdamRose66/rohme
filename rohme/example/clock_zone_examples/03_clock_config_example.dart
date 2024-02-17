@@ -18,56 +18,48 @@ import 'dart:async';
 /// This example shows how to use the [config] database to provide different
 /// clocks to particular components
 
-void main()
-{
-  simulateModel( () {
-      /// create the clocks zones
-      ClockZone clockZone1 = ClockZone( 'zone1' , simulator.zone , 2 );
-      ClockZone clockZone2 = ClockZone( 'zone2' , clockZone1.zone , 2 );
+void main() {
+  simulateModel(() {
+    /// create the clocks zones
+    ClockZone clockZone1 = ClockZone('zone1', simulator.zone, 2);
+    ClockZone clockZone2 = ClockZone('zone2', clockZone1.zone, 2);
 
-      // put them in the config
-      config['top.child1.clock'] = clockZone1;
-      config['top.child2.clock'] = clockZone2;
+    // put them in the config
+    config['top.child1.clock'] = clockZone1;
+    config['top.child2.clock'] = clockZone2;
 
-      // return the top level component of the simulation
-      return Top('top');
-    } ,
-    clockPeriod : SimDuration( picoseconds : 10 ) ,
-    duration : SimDuration( picoseconds : 1000 ) );
+    // return the top level component of the simulation
+    return Top('top');
+  },
+      clockPeriod: SimDuration(picoseconds: 10),
+      duration: SimDuration(picoseconds: 1000));
 }
 
-class Top extends Module
-{
-  late final Child child1 , child2;
+class Top extends Module {
+  late final Child child1, child2;
 
-  Top( super.name )
-  {
-    child1 = Child('child1' , this);
-    child2 = Child('child2' , this);
+  Top(super.name) {
+    child1 = Child('child1', this);
+    child2 = Child('child2', this);
   }
 }
 
-class Child extends Module
-{
+class Child extends Module {
   late final ClockZone clock;
 
-  Child( super.name , super.parent )
-  {
+  Child(super.name, super.parent) {
     // get the clock out of the config db
-    clock = getConfig<ClockZone>( 'clock' , component: this );
+    clock = getConfig<ClockZone>('clock', component: this);
   }
 
   @override
-  void run()
-  {
+  void run() {
     loop();
   }
 
-  Future<void> loop () async
-  {
-    while( true )
-    {
-      await clock.delay( 5 );
+  Future<void> loop() async {
+    while (true) {
+      await clock.delay(5);
       mPrint('${clock.clockName} : ${clock.elapsedTicks}');
     }
   }

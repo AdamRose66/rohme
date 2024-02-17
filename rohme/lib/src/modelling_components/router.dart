@@ -66,53 +66,52 @@ import 'memory_if.dart';
 ///
 /// Overlapping Address maps are decoded on a 'first in list wins' basis.
 ///
-class Router extends Module implements MemoryIf
-{
+class Router extends Module implements MemoryIf {
   /// Incoming read/writes come in through this export.
   late final MemoryPort targetExport;
 
   // this has to be fixed by the end of the construction phase.
-  final List<(int,int,MemoryPort)> _initiatorPorts = [];
+  final List<(int, int, MemoryPort)> _initiatorPorts = [];
 
   /// The [Function] used to map inbound addresses to outbound addresses
   ///
   /// The default implementation subtracts the start of the address range from
   /// the inbound address.
-  int Function(int,int) mapAddress = (int addr , int startAddress) { return addr - startAddress; };
+  int Function(int, int) mapAddress = (int addr, int startAddress) {
+    return addr - startAddress;
+  };
 
   /// The router constructor has a name, a parent, and optional memoryMap description.
-  Router( super.name , super.parent , [ List<(int,int,String)> initiatorDescription = const[] ] )
-  {
-    targetExport = MemoryPort('targetPort',this);
-    addInitiatorPorts( initiatorDescription );
+  Router(super.name, super.parent,
+      [List<(int, int, String)> initiatorDescription = const []]) {
+    targetExport = MemoryPort('targetPort', this);
+    addInitiatorPorts(initiatorDescription);
 
-    targetExport.implementedBy( this );
+    targetExport.implementedBy(this);
   }
 
   /// Adds a [MemoryPort] to the memory map, using the [initiatorDescription.
-  void addInitiatorPorts( List<(int,int,String)> initiatorDescription )
-  {
-    for( var d in initiatorDescription )
-    {
-      int startAddress , endAddress;
+  void addInitiatorPorts(List<(int, int, String)> initiatorDescription) {
+    for (var d in initiatorDescription) {
+      int startAddress, endAddress;
       String portName;
 
-      ( startAddress , endAddress , portName ) = d;
-      _initiatorPorts.add( (startAddress , endAddress , MemoryPort( portName , this )) );
+      (startAddress, endAddress, portName) = d;
+      _initiatorPorts
+          .add((startAddress, endAddress, MemoryPort(portName, this)));
     }
   }
 
   /// Looks up the initiator Port by name
-  MemoryPort initiatorPort( String portName )
-  {
-    int startAddress , endAddress;
+  MemoryPort initiatorPort(String portName) {
+    int startAddress, endAddress;
     MemoryPort memoryPort;
 
-    ( startAddress , endAddress , memoryPort ) = _initiatorPorts.firstWhere( (r) {
-      int localStartAddress , localEndAddress;
+    (startAddress, endAddress, memoryPort) = _initiatorPorts.firstWhere((r) {
+      int localStartAddress, localEndAddress;
       MemoryPort localMemoryPort;
 
-      ( localStartAddress , localEndAddress , localMemoryPort ) = r;
+      (localStartAddress, localEndAddress, localMemoryPort) = r;
 
       localStartAddress;
       localEndAddress;
@@ -133,146 +132,132 @@ class Router extends Module implements MemoryIf
   /// [mapAddress] is used to transform inbound to outbound addresses
   ///
   @override
-  Future<void> write64( int addr , int data ) async
-  {
+  Future<void> write64(int addr, int data) async {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    await memoryPort.write64( mapAddress( addr , startAddress ) , data );
+    await memoryPort.write64(mapAddress(addr, startAddress), data);
   }
 
   @override
-  Future<int> read64( int addr ) async
-  {
+  Future<int> read64(int addr) async {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    return await memoryPort.read64( mapAddress( addr , startAddress ) );
+    return await memoryPort.read64(mapAddress(addr, startAddress));
   }
 
   @override
-  Future<void> write32( int addr , int data ) async
-  {
+  Future<void> write32(int addr, int data) async {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    await memoryPort.write32( mapAddress( addr , startAddress ) , data );
+    await memoryPort.write32(mapAddress(addr, startAddress), data);
   }
 
   @override
-  Future<int> read32( int addr ) async
-  {
+  Future<int> read32(int addr) async {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    return await memoryPort.read32( mapAddress( addr , startAddress ) );
+    return await memoryPort.read32(mapAddress(addr, startAddress));
   }
 
   @override
-  Future<void> write16( int addr , int data ) async
-  {
+  Future<void> write16(int addr, int data) async {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    await memoryPort.write16( mapAddress( addr , startAddress ) , data );
+    await memoryPort.write16(mapAddress(addr, startAddress), data);
   }
 
   @override
-  Future<int> read16( int addr ) async
-  {
+  Future<int> read16(int addr) async {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    return await memoryPort.read16( mapAddress( addr , startAddress ) );
+    return await memoryPort.read16(mapAddress(addr, startAddress));
   }
 
   @override
-  Future<void> write8( int addr , int data ) async
-  {
+  Future<void> write8(int addr, int data) async {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    await memoryPort.write8( mapAddress( addr , startAddress ) , data );
+    await memoryPort.write8(mapAddress(addr, startAddress), data);
   }
 
   @override
-  Future<int> read8( int addr ) async
-  {
+  Future<int> read8(int addr) async {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    return await memoryPort.read8( mapAddress( addr , startAddress ) );
+    return await memoryPort.read8(mapAddress(addr, startAddress));
   }
 
   @override
-  DmiHint getDmiHint( int addr , [AccessType accessType = AccessType.readWrite] )
-  {
+  DmiHint getDmiHint(int addr, [AccessType accessType = AccessType.readWrite]) {
     MemoryPort memoryPort;
     int startAddress;
 
-    (startAddress,memoryPort) = _decode( addr );
+    (startAddress, memoryPort) = _decode(addr);
 
-    return memoryPort.getDmiHint( mapAddress( addr , startAddress ) );
+    return memoryPort.getDmiHint(mapAddress(addr, startAddress));
   }
 
   /// Returns a decoded (startAddress,MemoryPort] for [addr]
   ///
   /// Throws RouterDecodeError if [addr] is not in the memory map
   ///
-  (int,MemoryPort) _decode( int addr )
-  {
-    int startAddress , endAddress;
+  (int, MemoryPort) _decode(int addr) {
+    int startAddress, endAddress;
     MemoryPort memoryPort;
 
-    try
-    {
-      ( startAddress , endAddress , memoryPort ) = _initiatorPorts.firstWhere( (r) { return inRange( addr , r ); });
-    }
-    catch( e )
-    {
-      throw RouterDecodeError( fullName , 'Write' , addr );
+    try {
+      (startAddress, endAddress, memoryPort) = _initiatorPorts.firstWhere((r) {
+        return inRange(addr, r);
+      });
+    } catch (e) {
+      throw RouterDecodeError(fullName, 'Write', addr);
     }
 
     endAddress;
-    return (startAddress , memoryPort);
+    return (startAddress, memoryPort);
   }
 
   /// Returns true if [addr] is in the range of this [initiatorDescription]
   ///
   /// This function is used by decode logc in both the read and write methods.
   ///
-  bool inRange( int addr , (int,int,MemoryPort) r )
-  {
-    int startAddress , endAddress;
+  bool inRange(int addr, (int, int, MemoryPort) r) {
+    int startAddress, endAddress;
     MemoryPort memoryPort;
 
-    ( startAddress , endAddress , memoryPort ) = r;
+    (startAddress, endAddress, memoryPort) = r;
 
     memoryPort;
     return startAddress <= addr && addr < endAddress;
   }
-
 }
 
 /// Thrown by the [Router] if addr is not in the address map
-class RouterDecodeError implements Exception
-{
+class RouterDecodeError implements Exception {
   /// the name of the router doing the throwing
   final String routerName;
 
@@ -282,12 +267,10 @@ class RouterDecodeError implements Exception
   /// the address that cannot be decoded
   final int addr;
 
-
-  RouterDecodeError( this.routerName , this.command , this.addr );
+  RouterDecodeError(this.routerName, this.command, this.addr);
 
   @override
-  String toString()
-  {
+  String toString() {
     return '$routerName Cannot Decode $command ${addr.hex()}';
   }
 }

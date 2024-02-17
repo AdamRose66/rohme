@@ -14,14 +14,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 import 'dart:async';
 
-enum SignalState
-{
-  set , triggered
-}
+enum SignalState { set, triggered }
 
 /// A read interface for a [Signal]
-abstract interface class SignalReadIf
-{
+abstract interface class SignalReadIf {
   /// gets the current value of the signal
   int get currentValue;
 
@@ -42,7 +38,7 @@ abstract interface class SignalReadIf
   /// await readPort.changed( ( s ) => s.previousValue == 4 &&
   ///                                  s.currentValue == 15 );
   /// ```
-  Future<void> changed( [bool Function( Signal ) filter = anyEdge] );
+  Future<void> changed([bool Function(Signal) filter = anyEdge]);
 
   /// Function [f] is called whenever a [Signal] changes value as specified by
   /// filter
@@ -57,12 +53,12 @@ abstract interface class SignalReadIf
   /// readPort.alwaysAt( customPrint ,
   ///                   ( s ) => s.previousValue == 4 && s.currentValue == 15 );
   /// ```
-  void alwaysAt( void Function( Signal ) f , [bool Function( Signal ) filter = anyEdge] );
+  void alwaysAt(void Function(Signal) f,
+      [bool Function(Signal) filter = anyEdge]);
 }
 
 /// a write interface for a [Signal]
-abstract interface class SignalWriteIf
-{
+abstract interface class SignalWriteIf {
   /// gets the current value of the signal
   int get currentValue;
 
@@ -83,15 +79,17 @@ abstract interface class SignalWriteIf
   ///   Future.Delayed( duration );
   /// }
   /// ```
-  Future<void> nba( int v );
+  Future<void> nba(int v);
 }
 
 /// a standard filter to detect any edge
-bool anyEdge( Signal s ) => true;
+bool anyEdge(Signal s) => true;
+
 /// a standard filter to detect positive edges
-bool posEdge( Signal s ) => s.previousValue == 0 && s.currentValue != 0;
+bool posEdge(Signal s) => s.previousValue == 0 && s.currentValue != 0;
+
 /// a standard filter to detect negative edges
-bool negEdge( Signal s ) => s.previousValue != 0 && s.currentValue == 0;
+bool negEdge(Signal s) => s.previousValue != 0 && s.currentValue == 0;
 
 /// This Signal class is a 64 bit Signal
 ///
@@ -106,8 +104,7 @@ bool negEdge( Signal s ) => s.previousValue != 0 && s.currentValue == 0;
 /// next delta cycle, and then actually triggers the completers and callbacks
 /// in the next delta cycle, after a delay of Duration.zero.
 ///
-class Signal implements SignalReadIf , SignalWriteIf
-{
+class Signal implements SignalReadIf, SignalWriteIf {
   @override
   int get currentValue => _currentValue;
 
@@ -115,26 +112,23 @@ class Signal implements SignalReadIf , SignalWriteIf
   int get previousValue => _previousValue;
 
   @override
-  Future<void> changed( [bool Function( Signal ) filter = anyEdge] )
-  {
+  Future<void> changed([bool Function(Signal) filter = anyEdge]) {
     Completer<void> completer = Completer();
-    _alwaysAtCompleters.add( (completer,filter) );
+    _alwaysAtCompleters.add((completer, filter));
     return completer.future;
   }
 
   @override
-  void alwaysAt( void Function( Signal ) f , [bool Function( Signal ) filter = anyEdge] )
-  {
-    _alwaysFunctions.add( (f,filter) );
+  void alwaysAt(void Function(Signal) f,
+      [bool Function(Signal) filter = anyEdge]) {
+    _alwaysFunctions.add((f, filter));
   }
 
-  void _update( int v )
-  {
-    if( v != _currentValue )
-    {
-      if( _signalState == SignalState.set && v !=_currentValue )
-      {
-        throw ArgumentError.value( v , 'multiple nba : previous is $_previousValue , current is $_currentValue');
+  void _update(int v) {
+    if (v != _currentValue) {
+      if (_signalState == SignalState.set && v != _currentValue) {
+        throw ArgumentError.value(v,
+            'multiple nba : previous is $_previousValue , current is $_currentValue');
       }
 
       _previousValue = _currentValue;
@@ -144,58 +138,56 @@ class Signal implements SignalReadIf , SignalWriteIf
     }
   }
 
-  void _trigger()
-  {
-    if( _signalState == SignalState.triggered ) {
+  void _trigger() {
+    if (_signalState == SignalState.triggered) {
       return;
     }
 
     _signalState = SignalState.triggered;
 
     // ignore: avoid_function_literals_in_foreach_calls
-    _alwaysAtCompleters.forEach( (item) {
+    _alwaysAtCompleters.forEach((item) {
       Completer<void> completer;
-      bool Function( Signal ) filter;
+      bool Function(Signal) filter;
 
-      (completer,filter) = item;
+      (completer, filter) = item;
 
-      if( filter( this ) )
-      {
+      if (filter(this)) {
         completer.complete();
       }
     });
 
-    _alwaysAtCompleters.removeWhere( (item) {
+    _alwaysAtCompleters.removeWhere((item) {
       // ignore: unused_local_variable
       Completer<void> completer;
-      bool Function( Signal ) filter;
+      bool Function(Signal) filter;
 
-      (completer,filter) = item;
+      (completer, filter) = item;
 
-      return filter( this );
+      return filter(this);
     });
 
     // ignore: avoid_function_literals_in_foreach_calls
-    _alwaysFunctions.forEach( ( item ) {
-      void Function( Signal ) callback;
-      bool Function( Signal ) filter;
+    _alwaysFunctions.forEach((item) {
+      void Function(Signal) callback;
+      bool Function(Signal) filter;
 
-      ( callback , filter ) = item;
-      if( filter( this ) )
-      {
-        callback( this );
+      (callback, filter) = item;
+      if (filter(this)) {
+        callback(this);
       }
     });
   }
 
   @override
-  Future<void> nba( int v ) async
-  {
+  Future<void> nba(int v) async {
     // ensure update happens before next delta
-    scheduleMicrotask( () { _update( v ); } );
+    scheduleMicrotask(() {
+      _update(v);
+    });
 
     // wait a delta ( but since this is a Future, return control to caller )
-    await Future.delayed( Duration.zero );
+    await Future.delayed(Duration.zero);
 
     // trigger the consequences of any nba in the 'next' delta
     _trigger();
@@ -205,6 +197,7 @@ class Signal implements SignalReadIf , SignalWriteIf
   int _currentValue = 0;
   SignalState _signalState = SignalState.triggered;
 
-  final List<(void Function( Signal ),bool Function( Signal ))> _alwaysFunctions = [];
-  final List<(Completer<void>,bool Function( Signal ))> _alwaysAtCompleters = [];
+  final List<(void Function(Signal), bool Function(Signal))> _alwaysFunctions =
+      [];
+  final List<(Completer<void>, bool Function(Signal))> _alwaysAtCompleters = [];
 }

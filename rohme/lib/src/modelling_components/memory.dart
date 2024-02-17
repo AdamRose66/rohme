@@ -27,8 +27,7 @@ import 'bus_data.dart';
 ///
 /// The implementation uses [BusData], which is allocated lazily.
 ///
-class Memory extends Module implements MemoryIf
-{
+class Memory extends Module implements MemoryIf {
   /// an export to allow <= style connections
   late final Port<MemoryIf> memoryExport;
 
@@ -51,103 +50,97 @@ class Memory extends Module implements MemoryIf
 
   bool debug = false;
 
-  Memory( super.name , super.parent , this.size , {this.duration = const Duration(microseconds:10) , this.fill , this.debug = false} )
-  {
-    memoryExport = Port('memoryExport' , this );
-    _mutex = ( duration == null ) ? null : Mutex( fullName );
+  Memory(super.name, super.parent, this.size,
+      {this.duration = const Duration(microseconds: 10),
+      this.fill,
+      this.debug = false}) {
+    memoryExport = Port('memoryExport', this);
+    _mutex = (duration == null) ? null : Mutex(fullName);
 
-    memoryExport.implementedBy( this );
+    memoryExport.implementedBy(this);
   }
 
   /// writes 64 bit [data] to an 8 byte aligned address
   @override
-  Future<void> write64( int addr , int data ) async
-  {
-      if( _mutex != null ) await _mutex.lock();
-      if( duration != null ) await Future.delayed( duration! );
-      _busData.write64( addr , data );
-      _debugWriteTransaction( addr , data , 64 );
-      if( _mutex != null ) await _mutex.unlock();
+  Future<void> write64(int addr, int data) async {
+    if (_mutex != null) await _mutex.lock();
+    if (duration != null) await Future.delayed(duration!);
+    _busData.write64(addr, data);
+    _debugWriteTransaction(addr, data, 64);
+    if (_mutex != null) await _mutex.unlock();
   }
 
   /// Returns 64 bit data from an 8 byte aligned address
   @override
-  Future<int> read64( int addr ) async
-  {
-    if( _mutex != null ) await _mutex.lock();
-    if( duration != null ) await Future.delayed( duration! );
-    int data = _busData.read64( addr );
-    _debugReadTransaction( addr , data , 64 );
-    if( _mutex != null ) await _mutex.unlock();
+  Future<int> read64(int addr) async {
+    if (_mutex != null) await _mutex.lock();
+    if (duration != null) await Future.delayed(duration!);
+    int data = _busData.read64(addr);
+    _debugReadTransaction(addr, data, 64);
+    if (_mutex != null) await _mutex.unlock();
     return data;
   }
 
   /// writes 32 bit [data] to an 4 byte aligned address
   @override
-  Future<void> write32( int addr , int data ) async
-  {
-      if( _mutex != null ) await _mutex.lock();
-      if( duration != null ) await Future.delayed( duration! );
-      _busData.write32( addr , data );
-      _debugWriteTransaction( addr , data , 32 );
-      if( _mutex != null ) await _mutex.unlock();
+  Future<void> write32(int addr, int data) async {
+    if (_mutex != null) await _mutex.lock();
+    if (duration != null) await Future.delayed(duration!);
+    _busData.write32(addr, data);
+    _debugWriteTransaction(addr, data, 32);
+    if (_mutex != null) await _mutex.unlock();
   }
 
   /// Returns 32 bit data from a 4 byte aligned address
   @override
-  Future<int> read32( int addr ) async
-  {
-    if( _mutex != null ) await _mutex.lock();
-    if( duration != null ) await Future.delayed( duration! );
-    int data = _busData.read32( addr );
-    _debugReadTransaction( addr , data , 32 );
-    if( _mutex != null ) await _mutex.unlock();
+  Future<int> read32(int addr) async {
+    if (_mutex != null) await _mutex.lock();
+    if (duration != null) await Future.delayed(duration!);
+    int data = _busData.read32(addr);
+    _debugReadTransaction(addr, data, 32);
+    if (_mutex != null) await _mutex.unlock();
     return data;
   }
 
   /// writes 16 bit [data] to an 2 byte aligned address
   @override
-  Future<void> write16( int addr , int data ) async
-  {
-      if( _mutex != null ) await _mutex.lock();
-      if( duration != null ) await Future.delayed( duration! );
-      _busData.write16( addr , data );
-      _debugWriteTransaction( addr , data , 16 );
-      if( _mutex != null ) await _mutex.unlock();
+  Future<void> write16(int addr, int data) async {
+    if (_mutex != null) await _mutex.lock();
+    if (duration != null) await Future.delayed(duration!);
+    _busData.write16(addr, data);
+    _debugWriteTransaction(addr, data, 16);
+    if (_mutex != null) await _mutex.unlock();
   }
 
   /// Returns 16 bit data from a 2 byte aligned address
   @override
-  Future<int> read16( int addr ) async
-  {
-    if( _mutex != null ) await _mutex.lock();
-    if( duration != null ) await Future.delayed( duration! );
-    int data = _busData.read16( addr );
-    _debugReadTransaction( addr , data , 16 );
-    if( _mutex != null ) await _mutex.unlock();
+  Future<int> read16(int addr) async {
+    if (_mutex != null) await _mutex.lock();
+    if (duration != null) await Future.delayed(duration!);
+    int data = _busData.read16(addr);
+    _debugReadTransaction(addr, data, 16);
+    if (_mutex != null) await _mutex.unlock();
     return data;
   }
 
   /// writes 8 bit [data] to [addr]
   @override
-  Future<void> write8( int addr , int data ) async
-  {
-      if( _mutex != null ) await _mutex.lock();
-      if( duration != null ) await Future.delayed( duration! );
-      _busData.write8( addr , data );
-      _debugWriteTransaction( addr , data , 8 );
-      if( _mutex != null ) await _mutex.unlock();
+  Future<void> write8(int addr, int data) async {
+    if (_mutex != null) await _mutex.lock();
+    if (duration != null) await Future.delayed(duration!);
+    _busData.write8(addr, data);
+    _debugWriteTransaction(addr, data, 8);
+    if (_mutex != null) await _mutex.unlock();
   }
 
   /// Returns 8 bit data from [addr]
   @override
-  Future<int> read8( int addr ) async
-  {
-    if( _mutex != null ) await _mutex.lock();
-    if( duration != null ) await Future.delayed( duration! );
-    int data = _busData.read8( addr );
-    _debugReadTransaction( addr , data , 8 );
-    if( _mutex != null ) await _mutex.unlock();
+  Future<int> read8(int addr) async {
+    if (_mutex != null) await _mutex.lock();
+    if (duration != null) await Future.delayed(duration!);
+    int data = _busData.read8(addr);
+    _debugReadTransaction(addr, data, 8);
+    if (_mutex != null) await _mutex.unlock();
     return data;
   }
 
@@ -156,23 +149,18 @@ class Memory extends Module implements MemoryIf
   /// The availability of the hint may depend on the [accessType]
   ///
   @override
-  DmiHint getDmiHint( int addr , [AccessType accessType = AccessType.readWrite] )
-  {
-    return _busData.getDmiHint( addr , accessType );
+  DmiHint getDmiHint(int addr, [AccessType accessType = AccessType.readWrite]) {
+    return _busData.getDmiHint(addr, accessType);
   }
 
   /// A lazy getter for _busData
-  BusData get _busData
-  {
-    if( _storage == null )
-    {
-      _storage = BusData( size );
+  BusData get _busData {
+    if (_storage == null) {
+      _storage = BusData(size);
 
-      if( fill != null )
-      {
-        for( int i = 0; i < _storage!.byteData.lengthInBytes; i += 8 )
-        {
-          _storage!.byteData.setUint64( i , fill! );
+      if (fill != null) {
+        for (int i = 0; i < _storage!.byteData.lengthInBytes; i += 8) {
+          _storage!.byteData.setUint64(i, fill!);
         }
       }
     }
@@ -180,14 +168,15 @@ class Memory extends Module implements MemoryIf
     return _storage!;
   }
 
-  void _debugReadTransaction( int addr , int data , int bits )
-  {
+  void _debugReadTransaction(int addr, int data, int bits) {
     // ignore: unnecessary_brace_in_string_interps
-    if( debug ) mPrint('just read ${bits} bit ${data.hex()} from address ${addr.hex()}');
+    if (debug)
+      mPrint('just read ${bits} bit ${data.hex()} from address ${addr.hex()}');
   }
-  void _debugWriteTransaction( int addr , int data , int bits )
-  {
+
+  void _debugWriteTransaction(int addr, int data, int bits) {
     // ignore: unnecessary_brace_in_string_interps
-    if( debug ) mPrint('just wrote ${bits} bit ${data.hex()} to address ${addr.hex()}');
+    if (debug)
+      mPrint('just wrote ${bits} bit ${data.hex()} to address ${addr.hex()}');
   }
 }

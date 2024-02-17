@@ -18,22 +18,18 @@ import 'package:test/test.dart';
 //
 // A few abstract interfaces, some of which implement each other
 //
-abstract interface class MyInterface
-{
-  void remoteMessage( int n );
+abstract interface class MyInterface {
+  void remoteMessage(int n);
 }
 
-abstract interface class MyOtherInterface
-{
-  void otherMessage( int n );
+abstract interface class MyOtherInterface {
+  void otherMessage(int n);
 }
 
-abstract interface class CombinedInterface implements MyOtherInterface , MyInterface
-{
-}
+abstract interface class CombinedInterface
+    implements MyOtherInterface, MyInterface {}
 
-abstract interface class SomeOtherInterface
-{
+abstract interface class SomeOtherInterface {
   void yetAnotherMessage();
 }
 
@@ -45,9 +41,8 @@ abstract interface class SomeOtherInterface
 //
 // This is only needed because we can't do class<IF> implements IF in Dart :(
 //
-class MyPort extends Port<MyInterface> implements MyInterface
-{
-  MyPort( super.name , [super.parent] );
+class MyPort extends Port<MyInterface> implements MyInterface {
+  MyPort(super.name, [super.parent]);
 }
 
 //
@@ -61,14 +56,12 @@ class MyPort extends Port<MyInterface> implements MyInterface
 //
 // WISH LIST : it would be nice to be able to generate a Proxy from an interface
 //
-class MyProxy extends NamedComponent implements MyInterface
-{
-  MyProxy( super.name , [super.parent] );
+class MyProxy extends NamedComponent implements MyInterface {
+  MyProxy(super.name, [super.parent]);
 
   @override
-  void remoteMessage( int n )
-  {
-    remoteMessageFunc( n );
+  void remoteMessage(int n) {
+    remoteMessageFunc(n);
   }
 
   late final void Function(int) remoteMessageFunc;
@@ -83,19 +76,16 @@ class MyProxy extends NamedComponent implements MyInterface
 // than the test actually needs ('MyInterface') to demonstrate that we
 // can connect Port<IF> to an interface that implements IF.
 //
-class MyImp extends NamedComponent implements CombinedInterface
-{
-  MyImp( super.name , [super.parent] );
+class MyImp extends NamedComponent implements CombinedInterface {
+  MyImp(super.name, [super.parent]);
 
   @override
-  void remoteMessage( int n )
-  {
+  void remoteMessage(int n) {
     print('$fullName: remoteMessage $n');
   }
 
   @override
-  void otherMessage( int n )
-  {
+  void otherMessage(int n) {
     print('$fullName: otherMessage $n');
   }
 }
@@ -104,13 +94,11 @@ class MyImp extends NamedComponent implements CombinedInterface
 // We use this to demonstrate that attempted connections to the wrong
 // kind of interface generate a helpful exception
 //
-class ErrorImp extends NamedComponent implements SomeOtherInterface
-{
-  ErrorImp( super.name , [super.parent] );
+class ErrorImp extends NamedComponent implements SomeOtherInterface {
+  ErrorImp(super.name, [super.parent]);
 
   @override
-  void yetAnotherMessage()
-  {
+  void yetAnotherMessage() {
     print('$fullName yet another message');
   }
 }
@@ -118,21 +106,18 @@ class ErrorImp extends NamedComponent implements SomeOtherInterface
 //
 // The top level module
 //
-class Top extends Module
-{
+class Top extends Module {
   late final Initiator initiator;
   late final Target target;
 
-  Top( super.name , [super.parent] )
-  {
-    initiator = Initiator('initiator',this);
-    target = Target('target',this);
+  Top(super.name, [super.parent]) {
+    initiator = Initiator('initiator', this);
+    target = Target('target', this);
   }
 
   // at the top level, we bind sibling ports to sibling exports, moving across the hierarchy
   @override
-  void connect()
-  {
+  void connect() {
     initiator.p1 <= target.e;
     initiator.p2 <= target.e;
 
@@ -153,37 +138,34 @@ class Top extends Module
     }
     */
 
-    initiator.p4.implementedBy( target.other2remote );
+    initiator.p4.implementedBy(target.other2remote);
   }
 }
 
 //
 // An initiator, with ports and a run method
 //
-class Initiator extends Module
-{
-  late final MyPort p1;             // MyPort extends MyInterface
+class Initiator extends Module {
+  late final MyPort p1; // MyPort extends MyInterface
   late final Port<MyInterface> p2;
   late final Port<MyInterface> p3;
   late final MyPort p4;
 
-  Initiator( super.name, [super.parenet] )
-  {
-    p1 = MyPort('p1',this);
-    p2 = Port('p2',this);
-    p3 = Port('p3',this);
-    p4 = MyPort('p4',this);
+  Initiator(super.name, [super.parenet]) {
+    p1 = MyPort('p1', this);
+    p2 = Port('p2', this);
+    p3 = Port('p3', this);
+    p4 = MyPort('p4', this);
   }
 
   @override
-  Future<void> run () async
-  {
+  Future<void> run() async {
     // because MyPort extends MyInterface, we can call method directly on the port
-    p1.remoteMessage( 3 );
+    p1.remoteMessage(3);
 
     // alternative calling techniques if we have not declared a specialised port
-    p2().remoteMessage( 2 );
-    p2.portIf.remoteMessage( 1 );
+    p2().remoteMessage(2);
+    p2.portIf.remoteMessage(1);
 
     /*
     // now leads to a compile error
@@ -204,8 +186,8 @@ class Initiator extends Module
 
     // this actually calls 'otherMessage' because it is connected to a proxy
     // in 'top'
-    for( int i = 0; i < getConfig('iterations',component : this); i++ ) {
-      p4.remoteMessage( i );
+    for (int i = 0; i < getConfig('iterations', component: this); i++) {
+      p4.remoteMessage(i);
     }
   }
 }
@@ -213,32 +195,31 @@ class Initiator extends Module
 //
 // A target, with exports and internal channels aka IMPs.
 //
-class Target extends Module
-{
+class Target extends Module {
   late final Port<CombinedInterface> e;
   late final Port<SomeOtherInterface> eError;
 
   // used to make otherMessage "look like" a remoteMessage
   late final MyProxy other2remote;
 
-  Target( super.name , [super.parent] )
-  {
-    imp = MyImp("channel",this);
-    errorImp = ErrorImp("error_channel",this);
+  Target(super.name, [super.parent]) {
+    imp = MyImp("channel", this);
+    errorImp = ErrorImp("error_channel", this);
 
-    e = Port('e',this);
-    eError = Port('error',this);
+    e = Port('e', this);
+    eError = Port('error', this);
 
-    other2remote = MyProxy("other2remote",this);
-    other2remote.remoteMessageFunc = ( int n ) { imp.otherMessage( n ); };
+    other2remote = MyProxy("other2remote", this);
+    other2remote.remoteMessageFunc = (int n) {
+      imp.otherMessage(n);
+    };
   }
 
   // in the target, we bind exports to implementations, moving down the hierarchy
   @override
-  void connect()
-  {
-    e.implementedBy( imp );
-    eError.implementedBy( errorImp );
+  void connect() {
+    e.implementedBy(imp);
+    eError.implementedBy(errorImp);
   }
 
   late final MyImp imp;
@@ -246,9 +227,9 @@ class Target extends Module
 }
 
 void main() async {
-  test('combined test' , () {
+  test('combined test', () {
     config['top.initiator.iterations'] = 10;
 
-    simulateModel( () => Top('top') );
+    simulateModel(() => Top('top'));
   });
 }

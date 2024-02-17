@@ -57,7 +57,8 @@ void main() {
       });
     });
 
-    test('should throw ArgumentError when called with a negative SimDuration', () {
+    test('should throw ArgumentError when called with a negative SimDuration',
+        () {
       expect(() => Simulator().elapse(const SimDuration(days: -1)),
           throwsArgumentError);
     });
@@ -206,7 +207,8 @@ void main() {
         });
       });
 
-      test('should increase negative SimDuration timers to zero SimDuration', () {
+      test('should increase negative SimDuration timers to zero SimDuration',
+          () {
         Simulator().run((async) {
           final negativeSimDuration = const SimDuration(days: -1);
           Timer(negativeSimDuration, expectAsync0(() {
@@ -288,7 +290,8 @@ void main() {
       test('should work with Stream.timeout', () {
         Simulator().run((async) {
           final controller = StreamController<int>();
-          final timed = controller.stream.timeout(const SimDuration(minutes: 2));
+          final timed =
+              controller.stream.timeout(const SimDuration(minutes: 2));
 
           final events = <int>[];
           final errors = [];
@@ -363,7 +366,8 @@ void main() {
       Simulator().run((async) {
         final log = [];
         Timer(const SimDuration(seconds: 2), () => log.add('delayed'));
-        Timer.periodic(const SimDuration(seconds: 1), (_) => log.add('periodic'));
+        Timer.periodic(
+            const SimDuration(seconds: 1), (_) => log.add('periodic'));
 
         async.flushTimers(flushPeriodicTimers: false);
         expect(log, ['periodic', 'delayed', 'periodic']);
@@ -375,7 +379,8 @@ void main() {
         'if scheduled first', () {
       Simulator().run((async) {
         final log = [];
-        Timer.periodic(const SimDuration(seconds: 1), (_) => log.add('periodic'));
+        Timer.periodic(
+            const SimDuration(seconds: 1), (_) => log.add('periodic'));
         Timer(const SimDuration(seconds: 2), () => log.add('delayed'));
 
         async.flushTimers(flushPeriodicTimers: false);

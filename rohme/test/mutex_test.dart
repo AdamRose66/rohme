@@ -20,50 +20,46 @@ import 'package:test/test.dart';
 List<SimDuration> criticalA = [];
 List<SimDuration> criticalB = [];
 
-void runMutexTest( int loops )
-{
+void runMutexTest(int loops) {
   print('starting mutexTest');
 
-  simulator.run( (async) { mutexTest( loops ); });
-  simulator.elapse( SimDuration( seconds:1 ));
+  simulator.run((async) {
+    mutexTest(loops);
+  });
+  simulator.elapse(SimDuration(seconds: 1));
   print('finished sim at ${simulator.elapsed}');
 
-  expect( criticalA.length , equals( loops ) );
-  expect( criticalB.length , equals( loops ) );
+  expect(criticalA.length, equals(loops));
+  expect(criticalB.length, equals(loops));
 
-  expectNoOverlap( criticalA , criticalB );
+  expectNoOverlap(criticalA, criticalB);
 }
 
-Future<void> mutexTest( int loops ) async
-{
+Future<void> mutexTest(int loops) async {
   Mutex mutex = Mutex('mutex');
 
-  greedy( 'a' , loops , mutex , criticalA );
-  greedy( 'b' , loops , mutex , criticalB );
+  greedy('a', loops, mutex, criticalA);
+  greedy('b', loops, mutex, criticalB);
 }
 
-Future<void> greedy( String name , int loops , Mutex m , List<SimDuration> criticalSections ) async
-{
-  for( int i = 0; i < loops; i++ )
-  {
-    await m.lock( name );
-    criticalSections.add( simulator.elapsed );
+Future<void> greedy(
+    String name, int loops, Mutex m, List<SimDuration> criticalSections) async {
+  for (int i = 0; i < loops; i++) {
+    await m.lock(name);
+    criticalSections.add(simulator.elapsed);
 
     print('$name (${simulator.elapsed}): starting critical section $i');
-    await Future.delayed( SimDuration( microseconds: 10 ) );
+    await Future.delayed(SimDuration(microseconds: 10));
     print('$name (${simulator.elapsed}): ending critical section $i');
 
-    await m.unlock( name );
+    await m.unlock(name);
   }
 }
 
-void expectNoOverlap( List<SimDuration> l1 , List<SimDuration> l2 )
-{
-  for( SimDuration t1 in l1 )
-  {
-    for( SimDuration t2 in l2 )
-    {
-      expect( t1 , isNot( equals( t2 ) ) );
+void expectNoOverlap(List<SimDuration> l1, List<SimDuration> l2) {
+  for (SimDuration t1 in l1) {
+    for (SimDuration t2 in l2) {
+      expect(t1, isNot(equals(t2)));
     }
   }
 }
@@ -79,31 +75,31 @@ void main() async {
   group('A group of tests', () {
     bool beenHere = false;
     setUp(() {
-      if( !beenHere ) simulateModel( () { return Module('top'); });
+      if (!beenHere)
+        simulateModel(() {
+          return Module('top');
+        });
       beenHere = true;
     });
 
     test('Mutex Test', () async {
-      runMutexTest( 3 );
+      runMutexTest(3);
     });
     test('Semaphore Size Test', () {
       bool ok = true;
-      try
-      {
-        Semaphore('s',size:-1);
-      }
-      on SemaphoreSizeError catch( e )
-      {
+      try {
+        Semaphore('s', size: -1);
+      } on SemaphoreSizeError catch (e) {
         print('seen expected error $e');
         ok = false;
       }
-      expect( ok , false );
+      expect(ok, false);
     });
     test('Semaphore Used Test', () async {
-      Semaphore semaphore = Semaphore('s',size:2);
+      Semaphore semaphore = Semaphore('s', size: 2);
 
       await semaphore.acquire();
-      expect( semaphore.used , 1 );
+      expect(semaphore.used, 1);
     });
   });
 }

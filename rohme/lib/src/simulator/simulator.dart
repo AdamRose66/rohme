@@ -108,22 +108,19 @@ class Simulator {
   ///
   /// The [clockPeriod], this, and [name] are passed into the simulator's
   /// [zone] as zone values.
-  Simulator({this.clockPeriod = const SimDuration( picoseconds : 1 ),
-             this.includeTimerStackTrace = true ,
-             this.name = 'simulator'})
-  {
+  Simulator(
+      {this.clockPeriod = const SimDuration(picoseconds: 1),
+      this.includeTimerStackTrace = true,
+      this.name = 'simulator'}) {
     zone = Zone.current.fork(
-      zoneValues: { #clockPeriod: clockPeriod ,
-                    #simulator: this ,
-                    #name: name } ,
-      specification: ZoneSpecification(
-      createTimer: (_, __, ___, duration, callback) =>
-        _createTimer(duration, callback, false),
-      createPeriodicTimer: (_, __, ___, duration, callback) =>
-        _createTimer(duration, callback, true),
-      scheduleMicrotask: (_, __, ___, microtask) =>
-        _microtasks.add(microtask))
-    );
+        zoneValues: {#clockPeriod: clockPeriod, #simulator: this, #name: name},
+        specification: ZoneSpecification(
+            createTimer: (_, __, ___, duration, callback) =>
+                _createTimer(duration, callback, false),
+            createPeriodicTimer: (_, __, ___, duration, callback) =>
+                _createTimer(duration, callback, true),
+            scheduleMicrotask: (_, __, ___, microtask) =>
+                _microtasks.add(microtask)));
   }
 
   /// Simulates the asynchronous passage of time.
@@ -172,7 +169,8 @@ class Simulator {
   ///
   /// Calls [callback] with `this` as argument and returns its result.
   ///
-  T run<T>(T Function(Simulator self) callback) => zone.run( () => callback( this ) );
+  T run<T>(T Function(Simulator self) callback) =>
+      zone.run(() => callback(this));
 
   /// Runs all pending microtasks scheduled within a call to [run] until there
   /// are no more microtasks scheduled.
@@ -238,7 +236,8 @@ class Simulator {
   ///
   ///
   Timer _createTimer(Duration duration, Function callback, bool periodic) {
-    SimDuration simDuration = duration is SimDuration ? duration : SimDuration.fromDuration( duration );
+    SimDuration simDuration =
+        duration is SimDuration ? duration : SimDuration.fromDuration(duration);
     final timer = FakeTimer._(simDuration, callback, periodic, this,
         includeStackTrace: includeTimerStackTrace);
     _timers.add(timer);
@@ -251,13 +250,12 @@ class Simulator {
   }
 
   /// removes all timers for which selector( timer.zone ) is true
-  Set<FakeTimer> suspend( Zone zone , bool Function( Zone ) selector )
-  {
+  Set<FakeTimer> suspend(Zone zone, bool Function(Zone) selector) {
     Set<FakeTimer> selectedTimers = <FakeTimer>{};
 
-    _timers.removeWhere( ( timer ) {
-      bool selected = selector( timer.zone );
-      if( selected ) selectedTimers.add( timer );
+    _timers.removeWhere((timer) {
+      bool selected = selector(timer.zone);
+      if (selected) selectedTimers.add(timer);
       return selected;
     });
 
@@ -268,30 +266,26 @@ class Simulator {
   ///
   /// Checks that no timer in [suspendedTimers] is in the past. If it is,
   /// throws TimerNotInFuture.
-  void resume( Set<FakeTimer> suspendedTimers )
-  {
+  void resume(Set<FakeTimer> suspendedTimers) {
     // check we're not trying to resume a timer in the past
     // ignore: avoid_function_literals_in_foreach_calls
-    suspendedTimers.forEach( ( timer ) {
-      if( timer._nextCall < elapsed )
-      {
-        throw TimerNotInFuture( elapsed , timer._nextCall );
+    suspendedTimers.forEach((timer) {
+      if (timer._nextCall < elapsed) {
+        throw TimerNotInFuture(elapsed, timer._nextCall);
       }
     });
 
-    _timers.addAll( suspendedTimers );
+    _timers.addAll(suspendedTimers);
   }
 }
 
-class TimerNotInFuture implements Exception
-{
-  SimDuration elapsed , nextCall;
+class TimerNotInFuture implements Exception {
+  SimDuration elapsed, nextCall;
 
-  TimerNotInFuture( this.elapsed , this.nextCall );
+  TimerNotInFuture(this.elapsed, this.nextCall);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'Current time is $elapsed , so cannot schedule timer at $nextCall, which is in the past';
   }
 }
@@ -340,7 +334,8 @@ class FakeTimer implements Timer {
   String get debugString => 'Timer (duration: $duration, periodic: $isPeriodic)'
       '${_creationStackTrace != null ? ', created:\n$creationStackTrace' : ''}';
 
-  FakeTimer._(SimDuration duration, this._callback, this.isPeriodic, this._async,
+  FakeTimer._(
+      SimDuration duration, this._callback, this.isPeriodic, this._async,
       {bool includeStackTrace = true})
       : duration = duration < SimDuration.zero ? SimDuration.zero : duration,
         _creationStackTrace = includeStackTrace ? StackTrace.current : null {
@@ -360,7 +355,7 @@ class FakeTimer implements Timer {
     if (isPeriodic) {
       // ignore: avoid_dynamic_calls
       _callback(this);
-      reschedule( duration );
+      reschedule(duration);
     } else {
       cancel();
       // ignore: avoid_dynamic_calls
@@ -369,8 +364,7 @@ class FakeTimer implements Timer {
   }
 
   /// increments _nextCall by duration
-  void reschedule( SimDuration duration )
-  {
+  void reschedule(SimDuration duration) {
     _nextCall += duration;
   }
 }

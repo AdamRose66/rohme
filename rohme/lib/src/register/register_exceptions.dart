@@ -17,45 +17,39 @@ import 'register_base.dart';
 
 // Thrown when attempting to creating a [Field] that overlaps with another
 /// Field in the same [Register]
-class FieldOverlapError implements Exception
-{
+class FieldOverlapError implements Exception {
   Field clashingField;
-  (int,int) requestRange;
+  (int, int) requestRange;
 
-  FieldOverlapError( this.requestRange , this.clashingField );
+  FieldOverlapError(this.requestRange, this.clashingField);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'cannot create range $requestRange because it overlaps with Field $clashingField';
   }
 }
 
 /// Thrown when attempting to create a Field] that has the same name as another
 /// Field in the same [Register]
-class DuplicateFieldNameError implements Exception
-{
-  String registerName , fieldName;
+class DuplicateFieldNameError implements Exception {
+  String registerName, fieldName;
 
-  DuplicateFieldNameError( this.registerName , this.fieldName );
+  DuplicateFieldNameError(this.registerName, this.fieldName);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'cannot create field $fieldName in register $registerName because a field of that name already exists';
   }
 }
 
 /// Thrown when attempting to Write to a Read only register
-class WritetoReadOnly implements Exception
-{
+class WritetoReadOnly implements Exception {
   RegisterBase registerBase;
 
-  WritetoReadOnly( this.registerBase );
+  WritetoReadOnly(this.registerBase);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'Cannot write to $registerBase';
   }
 }

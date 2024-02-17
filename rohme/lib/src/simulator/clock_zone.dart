@@ -26,19 +26,17 @@ import 'dart:async';
 /// ```
 /// can use the current Zone's clockPeriod to await the appropriate amount of
 /// simulation time.
-Future<void> clockDelay( int n ) async
-{
-  await Future.delayed( tickTime( n ) );
+Future<void> clockDelay(int n) async {
+  await Future.delayed(tickTime(n));
 }
 
 /// Returns a [SimDuration] equivalent to n clock ticks in the current [Zone]
-SimDuration tickTime( int n ) => Zone.current[#clockPeriod] * n;
+SimDuration tickTime(int n) => Zone.current[#clockPeriod] * n;
 
 /// An abstract interface used to remotely await in a [ClockZone]
-abstract interface class ClockDelayIf
-{
+abstract interface class ClockDelayIf {
   /// Waits n clock cycles in the [ClockZone]
-  Future<void> delay( int n );
+  Future<void> delay(int n);
 
   /// Returns the number of elapsed ticks in the [ClockZone]
   int get elapsedTicks;
@@ -55,9 +53,8 @@ abstract interface class ClockDelayIf
 /// await clock.delay( 3 );
 /// print('${clock.clockName}: ticks ${clock.elapsedTicks}');
 /// ```
-class ClockDelayPort extends Port<ClockDelayIf> implements ClockDelayIf
-{
-  ClockDelayPort( super.name , super.parent );
+class ClockDelayPort extends Port<ClockDelayIf> implements ClockDelayIf {
+  ClockDelayPort(super.name, super.parent);
 }
 
 /// Divides the [parentZone]'s clock frequency, for use in [clockDelay]
@@ -84,16 +81,18 @@ class ClockDelayPort extends Port<ClockDelayIf> implements ClockDelayIf
 /// in its zoneValues array. This is guaranteed if the zone is [Simulator.zone]
 /// or [ClockZone.zone].
 ///
-class ClockZone implements ClockDelayIf
-{
+class ClockZone implements ClockDelayIf {
   /// The amount by which the [parentZone]'s clock frequency is divided
   ///
   /// In other words, the amount by which the [clockPeriod] is mutliplied
   final int divisor;
+
   /// The [parentZone]'s clock multiplied by the [divisor].
   final SimDuration clockPeriod;
+
   /// The underlying simulator
   final Simulator simulator;
+
   /// The [Zone] which this [ClockZone] forks.
   final Zone zone;
 
@@ -105,16 +104,14 @@ class ClockZone implements ClockDelayIf
 
   /// Forks a new zone with the same scheduler and a longer clockPeriod as the
   /// [parentZone].
-  ClockZone( String name , Zone parentZone , this.divisor ) :
-    clockPeriod = parentZone[#clockPeriod] * divisor ,
-    simulator = parentZone[#simulator] ,
-    zone = parentZone.fork(
-      zoneValues: {
-        #clockPeriod: parentZone[#clockPeriod] * divisor ,
-        #parentZone : parentZone ,
-        #name: '${parentZone[#name]}.$name'
-      }
-    );
+  ClockZone(String name, Zone parentZone, this.divisor)
+      : clockPeriod = parentZone[#clockPeriod] * divisor,
+        simulator = parentZone[#simulator],
+        zone = parentZone.fork(zoneValues: {
+          #clockPeriod: parentZone[#clockPeriod] * divisor,
+          #parentZone: parentZone,
+          #name: '${parentZone[#name]}.$name'
+        });
 
   /// Returns the full hierarchical name of this [ClockZone]
   String get name => zone[#name];
@@ -126,10 +123,11 @@ class ClockZone implements ClockDelayIf
   String get clockName => name;
 
   @override
-  String toString() => '$name : time ${zone[#simulator].elapsed} ticks $elapsedTicks';
+  String toString() =>
+      '$name : time ${zone[#simulator].elapsed} ticks $elapsedTicks';
 
   /// Runs callback in [zone]
-  R run<R>( R Function( ClockZone ) callback ) => zone.run( () => callback( this ) );
+  R run<R>(R Function(ClockZone) callback) => zone.run(() => callback(this));
 
   /// delays n [clockPeriod]s, whichever zone this is called from.
   ///
@@ -138,28 +136,28 @@ class ClockZone implements ClockDelayIf
   /// ```
   /// will resume n [clockPeriod]s after the await.
   @override
-  Future<void> delay( int n ) async
-  {
-    await run( ( clockZone ) async { await clockDelay( n ); } );
+  Future<void> delay(int n) async {
+    await run((clockZone) async {
+      await clockDelay(n);
+    });
   }
 
   /// Returns the number of elapsed clock ticks
   @override
-  int get elapsedTicks => simulator.elapsed.inPicoseconds ~/ clockPeriod.inPicoseconds;
+  int get elapsedTicks =>
+      simulator.elapsed.inPicoseconds ~/ clockPeriod.inPicoseconds;
 
   /// Suspends all timers in [simulator] that are in [zone] or one of its
   /// chidren.
   ///
   /// Also stores the time of suspension. Does nothing if no resume has been
   /// called after previous suspension.
-  void suspend()
-  {
-    if( _suspended.isNotEmpty )
-    {
+  void suspend() {
+    if (_suspended.isNotEmpty) {
       return;
     }
 
-    _suspended = simulator.suspend( zone , ( zone ) => _equalsOrIsChild( zone ) );
+    _suspended = simulator.suspend(zone, (zone) => _equalsOrIsChild(zone));
     _suspensionTime = simulator.elapsed;
   }
 
@@ -168,28 +166,23 @@ class ClockZone implements ClockDelayIf
   /// Adds the time since the suspension to all suspended timers before
   /// adding them back into [Simulator]
   ///
-  void resume()
-  {
-    if( _suspended.isEmpty )
-    {
+  void resume() {
+    if (_suspended.isEmpty) {
       return;
     }
 
     SimDuration timeSinceSuspension = simulator.elapsed - _suspensionTime;
 
     // ignore: avoid_function_literals_in_foreach_calls
-    _suspended.forEach( (timer) => timer.reschedule( timeSinceSuspension ) );
+    _suspended.forEach((timer) => timer.reschedule(timeSinceSuspension));
 
-    simulator.resume( _suspended );
+    simulator.resume(_suspended);
   }
 
   /// is child this, or a (recursive) child of this
-  bool _equalsOrIsChild( Zone child )
-  {
-    for( Zone? c = child; c != null; c = c[#parentZone] )
-    {
-      if( c == zone )
-      {
+  bool _equalsOrIsChild(Zone child) {
+    for (Zone? c = child; c != null; c = c[#parentZone]) {
+      if (c == zone) {
         return true;
       }
     }

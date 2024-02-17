@@ -24,58 +24,54 @@ import '../utils/hex_print.dart';
 /// twiddling.
 ///
 /// Read and Write callbacks may be associated with a Field.
-class Field extends RegisterBase
-{
+class Field extends RegisterBase {
   /// The [Register] that this field is part of.
   final RegisterWithOverlaps register;
+
   /// The range of this field ( [from,to) )
-  final (int,int) range;
+  final (int, int) range;
+
   /// The mask needed by this register to correctly modify the [Register].
   final int mask;
 
   /// needed to unpack the range
-  int get from
-  {
+  int get from {
     // ignore: unused_local_variable
-    int f , t;
+    int f, t;
 
-    (f,t) = range;
+    (f, t) = range;
 
     return f;
   }
 
   /// A Field requires a register, a name and a [from,to) range
-  Field( this.register , String name , this.range ,
-         [AccessType accessType = AccessType.readWrite]):
-    mask = calculateMask( range ) ,
-    super( name , accessType );
+  Field(this.register, String name, this.range,
+      [AccessType accessType = AccessType.readWrite])
+      : mask = calculateMask(range),
+        super(name, accessType);
 
   /// Writes a value without side effects
   @override
-  void poke( int data )
-  {
-    register.poke( (register.peek() & ~mask) | ((data << from) & mask) );
+  void poke(int data) {
+    register.poke((register.peek() & ~mask) | ((data << from) & mask));
   }
 
   /// Reads a value without side effects
   @override
-  int peek()
-  {
+  int peek() {
     return (register.peek() & mask) >> from;
   }
 
   /// A [String] representation of this field
   @override
-  String toString()
-  {
+  String toString() {
     String str;
-    int from , to;
+    int from, to;
 
-    (from,to) = range;
+    (from, to) = range;
     str = '$name : ${register.name}[$from,$to] = ${peek().bin()}';
 
-    if( accessType != AccessType.readWrite )
-    {
+    if (accessType != AccessType.readWrite) {
       str += ' : $accessType only';
     }
 
@@ -83,16 +79,14 @@ class Field extends RegisterBase
   }
 
   /// A static function used by the constructor to calculate the mask
-  static int calculateMask( (int,int) range )
-  {
+  static int calculateMask((int, int) range) {
     int mask = 0;
 
-    int from , to;
+    int from, to;
 
-    (from,to) = range;
+    (from, to) = range;
 
-    for( int i = from , m = (0x1 << from); i < to; i++ , m <<= 1 )
-    {
+    for (int i = from, m = (0x1 << from); i < to; i++, m <<= 1) {
       mask |= m;
     }
 

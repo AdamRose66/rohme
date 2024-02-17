@@ -15,15 +15,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 import '../modelling.dart';
 import '../primitives.dart';
 
-
 /// A Convenience [Port] for [SignalReadIf]
-class SignalReadPort extends Port<SignalReadIf> implements SignalReadIf
-{
-  SignalReadPort( super.name , [super.parent] );
+class SignalReadPort extends Port<SignalReadIf> implements SignalReadIf {
+  SignalReadPort(super.name, [super.parent]);
 }
 
 /// A Convenience [Port] for [SignalWriteIf]
-class SignalWritePort extends Port<SignalWriteIf> implements SignalWriteIf
-{
-  SignalWritePort( super.name , [super.parent] );
+class SignalWritePort extends Port<SignalWriteIf> implements SignalWriteIf {
+  SignalWritePort(super.name, [super.parent]);
 }

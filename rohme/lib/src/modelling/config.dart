@@ -29,13 +29,11 @@ import 'module.dart';
 /// Regex searches can be done in the usual Dart way. No need to reinvent the
 /// wheel.
 ///
-Map<String,Object?> config = {};
+Map<String, Object?> config = {};
 
 /// if the component is not null, prefix its Hierarchical name
-String calculateFullName( String name , NamedComponent? component )
-{
-  if( component == null )
-  {
+String calculateFullName(String name, NamedComponent? component) {
+  if (component == null) {
     return name;
   }
   return '${component.fullName}.$name';
@@ -49,25 +47,22 @@ String calculateFullName( String name , NamedComponent? component )
 ///
 /// If there is no config at component?.name, throw ConfigWrongType
 ///
-T? getConfigNullable<T>( String name , [NamedComponent? component] )
-{
-  String fullName = calculateFullName( name , component );
+T? getConfigNullable<T>(String name, [NamedComponent? component]) {
+  String fullName = calculateFullName(name, component);
 
-  if( !config.containsKey( fullName ) )
-  {
-    throw ConfigDoesNotExist( fullName ); // config does not exist
+  if (!config.containsKey(fullName)) {
+    throw ConfigDoesNotExist(fullName); // config does not exist
   }
 
   Object? o = config[fullName];
 
-  if( o == null )
-  {
+  if (o == null) {
     return null; // config exists, and its value is null
   }
 
-  if( o is! T )
-  {
-    throw ConfigWrongType<T>( fullName , o ); // config exists, but its the wrong type
+  if (o is! T) {
+    throw ConfigWrongType<T>(
+        fullName, o); // config exists, but its the wrong type
   }
 
   return o as T;
@@ -83,77 +78,64 @@ T? getConfigNullable<T>( String name , [NamedComponent? component] )
 ///
 /// Throws [ConfigIsNull] if component?.name exists and is null.
 ///
-T getConfig<T>( String name , {NamedComponent? component,T? defaultValue} )
-{
+T getConfig<T>(String name, {NamedComponent? component, T? defaultValue}) {
   T? t;
 
-  try
-  {
-    t = getConfigNullable( name , component );
-  }
-  on ConfigDoesNotExist
-  {
-    if( defaultValue == null )
-    {
+  try {
+    t = getConfigNullable(name, component);
+  } on ConfigDoesNotExist {
+    if (defaultValue == null) {
       rethrow;
     }
     return defaultValue;
   }
 
-  if( t == null )
-  {
+  if (t == null) {
     // config might exist, but its value could be null
-    throw ConfigIsNull( calculateFullName( name , component ) );
+    throw ConfigIsNull(calculateFullName(name, component));
   }
 
   return t;
 }
 
 /// a based class for the other exceptions in this library
-abstract class ConfigException implements Exception
-{
+abstract class ConfigException implements Exception {
   final String configName;
 
-  ConfigException( this.configName );
+  ConfigException(this.configName);
 
   @override
   String toString();
 }
 
 /// An exception raised when a config does not exist
-class ConfigDoesNotExist extends ConfigException
-{
-  ConfigDoesNotExist( super.configName );
+class ConfigDoesNotExist extends ConfigException {
+  ConfigDoesNotExist(super.configName);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'there is no config at $configName';
   }
 }
 
 /// An exception raised when a config is unexpectedly null
-class ConfigIsNull extends ConfigException
-{
-  ConfigIsNull( super.configName );
+class ConfigIsNull extends ConfigException {
+  ConfigIsNull(super.configName);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'the config at $configName is null';
   }
 }
 
 /// An exception raised when a config exists but is of the wrong type
-class ConfigWrongType<T> extends ConfigException
-{
+class ConfigWrongType<T> extends ConfigException {
   final Object actual;
 
-  ConfigWrongType( super.configName , this.actual );
+  ConfigWrongType(super.configName, this.actual);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'config item at $configName exists but its type $actual.runtimeType is not a $T';
   }
 }

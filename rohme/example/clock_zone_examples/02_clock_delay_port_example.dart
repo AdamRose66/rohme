@@ -19,29 +19,25 @@ import 'dart:async';
 /// of the [Module] hierarchy in a distant part of the hierarchy, by
 /// connecting [ClockDelayPort]s across the hierarchy.
 
-void main()
-{
-  simulateModel( () => Top('top') ,
-            clockPeriod : SimDuration( picoseconds : 10 ) ,
-            duration : SimDuration( picoseconds : 1000 ) );
+void main() {
+  simulateModel(() => Top('top'),
+      clockPeriod: SimDuration(picoseconds: 10),
+      duration: SimDuration(picoseconds: 1000));
 }
 
-class Top extends Module
-{
+class Top extends Module {
   late final ClockGenerator clockGenerator;
-  late final Child child1 , child2;
+  late final Child child1, child2;
 
-  Top( super.name )
-  {
+  Top(super.name) {
     /// create the [ClockGenerator] and the two [Child] modules
-    clockGenerator = ClockGenerator('clockGenerator',this);
-    child1 = Child('child1' , this);
-    child2 = Child('child2' , this);
+    clockGenerator = ClockGenerator('clockGenerator', this);
+    child1 = Child('child1', this);
+    child2 = Child('child2', this);
   }
 
   @override
-  void connect()
-  {
+  void connect() {
     /// Connect child clocks to the generator clocks
     child1.clock <= clockGenerator.clock1;
     child2.clock <= clockGenerator.clock2;
@@ -49,53 +45,45 @@ class Top extends Module
 }
 
 /// [ClockGenerator] generates two related clocks
-class ClockGenerator extends Module
-{
+class ClockGenerator extends Module {
   /// The two external [ClockDelayPort] exports
-  late final ClockDelayPort clock1 , clock2;
+  late final ClockDelayPort clock1, clock2;
 
   /// The two private [ClockZone]s
-  late final ClockZone _clockZone1,  _clockZone2;
+  late final ClockZone _clockZone1, _clockZone2;
 
-  ClockGenerator( super.name , super.parent )
-  {
-    _clockZone1 = ClockZone( 'zone1' , simulator.zone , 2 );
-    _clockZone2 = ClockZone( 'zone2' , _clockZone1.zone , 2 );
+  ClockGenerator(super.name, super.parent) {
+    _clockZone1 = ClockZone('zone1', simulator.zone, 2);
+    _clockZone2 = ClockZone('zone2', _clockZone1.zone, 2);
 
-    clock1 = ClockDelayPort('clockPort1',this);
-    clock2 = ClockDelayPort('clockPort2',this);
+    clock1 = ClockDelayPort('clockPort1', this);
+    clock2 = ClockDelayPort('clockPort2', this);
   }
 
   @override
-  void connect()
-  {
+  void connect() {
     /// Connect both exports directly to their [ClockZone] implentations
-    clock1.implementedBy( _clockZone1 );
-    clock2.implementedBy( _clockZone2 );
+    clock1.implementedBy(_clockZone1);
+    clock2.implementedBy(_clockZone2);
   }
 }
 
-class Child extends Module
-{
+class Child extends Module {
   /// Each child is connected to its own clock
   late final ClockDelayPort clock;
 
-  Child( super.name , super.parent )
-  {
-    clock = ClockDelayPort('clock' , this );
+  Child(super.name, super.parent) {
+    clock = ClockDelayPort('clock', this);
   }
 
   @override
-  void run()
-  {
+  void run() {
     loop();
   }
 
-  Future<void> loop () async
-  {
-    while( true )
-    {
-      await clock.delay( 5 );
+  Future<void> loop() async {
+    while (true) {
+      await clock.delay(5);
       mPrint('${clock.clockName} : ${clock.elapsedTicks}');
     }
   }

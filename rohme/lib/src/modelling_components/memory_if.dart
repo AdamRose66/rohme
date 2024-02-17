@@ -43,8 +43,7 @@ import '../utils.dart';
 ///      assert( dmiHint.originalBusData.read32( 0x100 ) == 0x12345678 );
 ///     }
 /// ```
-class DmiHint
-{
+class DmiHint {
   /// The original, underlying BusData used to define the memory
   final BusData originalBusData;
 
@@ -54,7 +53,9 @@ class DmiHint
   /// The offset of the [adjustedView] relative to the [originalBusData]
   final int offset;
 
-  DmiHint( this.originalBusData , this.offset ) : adjustedView = BusData.sublistView( originalBusData.byteData , originalBusData.endian , offset );
+  DmiHint(this.originalBusData, this.offset)
+      : adjustedView = BusData.sublistView(
+            originalBusData.byteData, originalBusData.endian, offset);
 }
 
 /// An abstract memory interface, allowing aligned access to underlying storage
@@ -64,33 +65,35 @@ class DmiHint
 /// reads and writes may throw [RangeError] or [AlignmentError]
 /// getDmiHint may throw [RangeError] or [NoDmiHint].
 ///
-abstract interface class MemoryIf
-{
+abstract interface class MemoryIf {
   /// writes 64 bit [data] to an 8 byte aligned address
-  Future<void> write64( int addr , int data );
+  Future<void> write64(int addr, int data);
+
   /// Returns 64 bit data from an 8 byte aligned address
-  Future<int> read64( int addr );
+  Future<int> read64(int addr);
 
   /// writes 32 bit [data] to a 4 byte aligned address
-  Future<void> write32( int addr , int data );
+  Future<void> write32(int addr, int data);
+
   /// Returns 32 bit data from a 4 byte aligned address
-  Future<int> read32( int addr );
+  Future<int> read32(int addr);
 
   /// writes 16 bit [data] to a 2 byte aligned address
-  Future<void> write16( int addr , int data );
+  Future<void> write16(int addr, int data);
+
   /// Returns 16 bit data from a 2 byte aligned address
-  Future<int> read16( int addr );
+  Future<int> read16(int addr);
 
   /// writes 8 bit [data] from [addr]
-  Future<void> write8( int addr , int data );
+  Future<void> write8(int addr, int data);
   // returns one byte of data from [addr]
-  Future<int> read8( int addr );
+  Future<int> read8(int addr);
 
   /// get a DmiHint from [addr].
   ///
   /// The availability of the hint may depend on the [accessType]
   ///
-  DmiHint getDmiHint( int addr , [AccessType accessType = AccessType.readWrite] );
+  DmiHint getDmiHint(int addr, [AccessType accessType = AccessType.readWrite]);
 }
 
 /// A convenience port for [MemoryIf]
@@ -103,37 +106,32 @@ abstract interface class MemoryIf
 /// memoryPort.read32( addr , data );
 /// ```
 ///
-class MemoryPort extends Port<MemoryIf> implements MemoryIf
-{
-  MemoryPort( super.name , [super.parent] );
+class MemoryPort extends Port<MemoryIf> implements MemoryIf {
+  MemoryPort(super.name, [super.parent]);
 }
 
 /// Thrown when an alignment error is observed
-class AlignmentError implements Exception
-{
-  int addr , alignment;
+class AlignmentError implements Exception {
+  int addr, alignment;
 
-  AlignmentError( this.addr , this.alignment );
+  AlignmentError(this.addr, this.alignment);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'AlignmentError: ${addr.hex()} is not aligned to $alignment bytes';
   }
 }
 
 /// Thrown when there is no [DmiHint] available
-class NoDmiHint implements Exception
-{
+class NoDmiHint implements Exception {
   final int addr;
   AccessType accessType;
   final String name;
 
-  NoDmiHint( this.name , this.addr , this.accessType );
+  NoDmiHint(this.name, this.addr, this.accessType);
 
   @override
-  String toString()
-  {
+  String toString() {
     return '$name: no Dmi Hint for address ${addr.hex()} access type $accessType';
   }
 }

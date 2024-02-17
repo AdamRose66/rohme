@@ -26,18 +26,20 @@ import '../primitives/access_type.dart';
 /// provided by Dart.
 ///
 
-class RegisterMap
-{
+class RegisterMap {
   /// The name of the register map
   final String name;
+
   /// the size in bits of all the registers in this register map
   final int registerSize;
-  /// the map of registers, ordered and indexed by address
-  final SplayTreeMap<int,Register> map = SplayTreeMap();
-  /// the map of registers, indexed by strings
-  final Map<String,Register> byName = {};
 
-  RegisterMap( this.name , [this.registerSize = 32]);
+  /// the map of registers, ordered and indexed by address
+  final SplayTreeMap<int, Register> map = SplayTreeMap();
+
+  /// the map of registers, indexed by strings
+  final Map<String, Register> byName = {};
+
+  RegisterMap(this.name, [this.registerSize = 32]);
 
   /// Adds a [Register] to an [address] in the Register map
   ///
@@ -53,14 +55,10 @@ class RegisterMap
   ///
   /// The range of a field is specified as [from,to). In other words, b is in
   /// the range if from <= b < to.
-  Register addRegister( String registerName , int address ,
-    { int initialValue = 0 ,
-      AccessType accessType = AccessType.readWrite } )
-  {
-    Register register = Register( registerName ,
-                                  accessType: accessType ,
-                                  initialValue: initialValue ,
-                                  size: registerSize );
+  Register addRegister(String registerName, int address,
+      {int initialValue = 0, AccessType accessType = AccessType.readWrite}) {
+    Register register = Register(registerName,
+        accessType: accessType, initialValue: initialValue, size: registerSize);
 
     map[address] = register;
     byName[registerName] = register;
@@ -68,20 +66,17 @@ class RegisterMap
   }
 
   /// looks up a [Register] by name
-  Register getByName( String registerName )
-  {
+  Register getByName(String registerName) {
     return byName[registerName]!;
   }
 
   /// looks up a Register by address
-  Register operator[]( int addr )
-  {
+  Register operator [](int addr) {
     return map[addr]!;
   }
 
   /// resets every register in the map to its initialValue
-  void reset()
-  {
-    map.forEach( (addr,register) => register.reset() );
+  void reset() {
+    map.forEach((addr, register) => register.reset());
   }
 }

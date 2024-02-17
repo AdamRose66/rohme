@@ -15,68 +15,59 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 import 'package:rohme/rohme.dart';
 
 void main() {
-  simulateModel( () { return Top('top'); } );
+  simulateModel(() {
+    return Top('top');
+  });
 }
 
-class Top extends Module
-{
+class Top extends Module {
   late final Producer producer;
   late final Consumer consumer;
   late final FifoModule<int> fifo;
 
-  Top( super.name , [super.parent] )
-  {
-    producer = Producer('producer',this);
-    consumer = Consumer('consumer',this);
-    fifo = FifoModule('fifo' , this );
+  Top(super.name, [super.parent]) {
+    producer = Producer('producer', this);
+    consumer = Consumer('consumer', this);
+    fifo = FifoModule('fifo', this);
   }
 
   @override
-  void connect()
-  {
+  void connect() {
     producer.putPort <= fifo.putExport;
     consumer.getPort <= fifo.getExport;
   }
 }
 
-class Producer extends Module
-{
+class Producer extends Module {
   late final PutPort putPort;
 
-  Producer( super.name , [super.parent] )
-  {
-    putPort = PutPort('putPort',this);
+  Producer(super.name, [super.parent]) {
+    putPort = PutPort('putPort', this);
   }
 
   @override
-  void run() async
-  {
+  void run() async {
     mPrint('run');
-    for( int i = 0; i < 10; i++ )
-    {
+    for (int i = 0; i < 10; i++) {
       mPrint('about to put $i');
-      await putPort.put( i );
-      await Future.delayed( Duration( microseconds : 10 ) );
+      await putPort.put(i);
+      await Future.delayed(Duration(microseconds: 10));
     }
   }
 }
 
-class Consumer extends Module
-{
+class Consumer extends Module {
   late final GetPort getPort;
 
-  Consumer( super.name , [super.parent] )
-  {
-    getPort = GetPort('getPort',this);
+  Consumer(super.name, [super.parent]) {
+    getPort = GetPort('getPort', this);
   }
 
   @override
-  void run() async
-  {
+  void run() async {
     mPrint('run');
-    for( int i = 0; i < 10; i++ )
-    {
-      int v = await( getPort.get() );
+    for (int i = 0; i < 10; i++) {
+      int v = await (getPort.get());
       mPrint('just got $v');
     }
   }
@@ -85,12 +76,10 @@ class Consumer extends Module
 //
 // convenience ports so that we can directly access put and get in the ports
 //
-class PutPort extends Port<FifoPutIf<int>> implements FifoPutIf<int>
-{
-  PutPort( super.name , [super.parent] );
+class PutPort extends Port<FifoPutIf<int>> implements FifoPutIf<int> {
+  PutPort(super.name, [super.parent]);
 }
 
-class GetPort extends Port<FifoGetIf<int>> implements FifoGetIf<int>
-{
-  GetPort( super.name , [super.parent] );
+class GetPort extends Port<FifoGetIf<int>> implements FifoGetIf<int> {
+  GetPort(super.name, [super.parent]);
 }

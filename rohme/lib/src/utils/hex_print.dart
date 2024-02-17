@@ -14,20 +14,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 extension HexPrint on int {
   /// returns a hex String preceded by Ox
-  String hex()
-  {
+  String hex() {
     // ignore: unnecessary_this
-    return '0x${this.toRadixString( 16 )}';
+    return '0x${this.toRadixString(16)}';
   }
 
-  String bin()
-  {
+  String bin() {
     // ignore: unnecessary_this
-    return '0b${this.toRadixString( 2 )}';
+    return '0b${this.toRadixString(2)}';
   }
 
-  String hexBin()
-  {
+  String hexBin() {
     // ignore: unnecessary_this
     return '${this.hex()},${this.bin()}';
   }
@@ -36,8 +33,7 @@ extension HexPrint on int {
 /// A Class Wrapper around an int, to enable pass by reference semantics
 ///
 /// Particularly used by [RegisterWithOverlaps], and by extension, [Register].
-class SharedInt
-{
+class SharedInt {
   int value;
-  SharedInt( [this.value = 0] );
+  SharedInt([this.value = 0]);
 }

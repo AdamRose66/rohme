@@ -15,101 +15,87 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
-abstract interface class A
-{
+abstract interface class A {
   int a();
 }
 
 class APort extends Port<A> implements A {
-  APort( super.name , [super.parent] );
+  APort(super.name, [super.parent]);
 }
 
 void main() {
-  test('port_combined_test' , () {
-    simulateModel( () => Top('top') );
+  test('port_combined_test', () {
+    simulateModel(() => Top('top'));
   });
 }
 
-class Top extends Module
-{
+class Top extends Module {
   late final ChildInitiator ci1;
   late final ChildInitiator ci2;
   late final ChildTarget ct;
 
-  Top( super.name , [super.parent] )
-  {
-    ci1 = ChildInitiator('ci1' , this );
-    ci2 = ChildInitiator('ci2' , this );
-    ct = ChildTarget('ct' , this );
+  Top(super.name, [super.parent]) {
+    ci1 = ChildInitiator('ci1', this);
+    ci2 = ChildInitiator('ci2', this);
+    ct = ChildTarget('ct', this);
   }
 
   @override
-  void connect()
-  {
+  void connect() {
     ci1.aPort <= ct.aExport;
     ci2.aPort <= ct.aExport;
   }
 }
 
-class ChildInitiator extends Module
-{
+class ChildInitiator extends Module {
   late final APort aPort;
   late final GrandChildInitiator gci;
 
-  ChildInitiator( super.name , [super.parent] )
-  {
-    aPort = APort('aPort',this);
-    gci = GrandChildInitiator('gci',this);
+  ChildInitiator(super.name, [super.parent]) {
+    aPort = APort('aPort', this);
+    gci = GrandChildInitiator('gci', this);
   }
 
   @override
-  void connect()
-  {
+  void connect() {
     gci.aPort <= aPort;
   }
 }
 
-class GrandChildInitiator extends Module
-{
+class GrandChildInitiator extends Module {
   late final APort aPort;
 
-  GrandChildInitiator( super.name , [super.parent] )
-  {
-    aPort = APort('aPort',this);
+  GrandChildInitiator(super.name, [super.parent]) {
+    aPort = APort('aPort', this);
   }
 
   @override
-  Future<void> run() async
-  {
+  Future<void> run() async {
     int aVal = aPort.a();
 
     print('$fullName: a is $aVal');
 
-    expect( -1 , equals( aVal ) );
+    expect(-1, equals(aVal));
   }
 }
 
-class ChildTarget extends Module
-{
+class ChildTarget extends Module {
   late final APort aExport;
   late final GrandChildTarget gct;
 
-  ChildTarget( super.name , [super.parent] )
-  {
-    aExport = APort('aExport',this);
-    gct = GrandChildTarget('gct',this);
+  ChildTarget(super.name, [super.parent]) {
+    aExport = APort('aExport', this);
+    gct = GrandChildTarget('gct', this);
   }
 
   @override
-  void connect()
-  {
-    aExport.implementedBy( gct );
+  void connect() {
+    aExport.implementedBy(gct);
   }
 }
 
-class GrandChildTarget extends NamedComponent implements A
-{
-  GrandChildTarget( super.name , [super.parent] );
+class GrandChildTarget extends NamedComponent implements A {
+  GrandChildTarget(super.name, [super.parent]);
 
   @override
   int a() => -1;

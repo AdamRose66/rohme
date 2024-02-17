@@ -15,33 +15,28 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
-abstract interface class A
-{
+abstract interface class A {
   int a();
 }
 
-abstract interface class B
-{
+abstract interface class B {
   int b();
 }
 
-abstract interface class Combined implements A , B {}
+abstract interface class Combined implements A, B {}
 
-class AProxy implements A
-{
+class AProxy implements A {
   @override
   int a() => aFunc();
 
   late final int Function() aFunc;
 }
 
-abstract interface class D
-{
+abstract interface class D {
   int d();
 }
 
-class Component implements Combined
-{
+class Component implements Combined {
   @override
   int a() => 0;
 
@@ -49,27 +44,29 @@ class Component implements Combined
   int b() => 1;
 }
 
-class OtherComponent
-{
+class OtherComponent {
   int c() => 2;
   int d() => 3;
 
   AProxy cProxy = AProxy();
   AProxy dProxy = AProxy();
 
-  OtherComponent()
-  {
-    cProxy.aFunc = () { return c(); };
-    dProxy.aFunc = () { return d(); };
+  OtherComponent() {
+    cProxy.aFunc = () {
+      return c();
+    };
+    dProxy.aFunc = () {
+      return d();
+    };
   }
 }
 
 class APort extends Port<A> implements A {
-  APort( super.name , [super.parent] );
+  APort(super.name, [super.parent]);
 }
 
 void main() {
-  test('port_combined_test' , () {
+  test('port_combined_test', () {
     Component component = Component();
     Port<Combined> pCombined = Port('pCombined');
     APort pA2 = APort('pA2');
@@ -78,40 +75,37 @@ void main() {
     pA2 <= pA1;
     pA1 <= pCombined;
 
-    pCombined.implementedBy( component );
+    pCombined.implementedBy(component);
 
     pA2.doConnections();
 
-    expect( 1 , equals( pCombined.portIf.b() ) );
-    expect( 0 , equals( pA1.portIf.a() ) );
-    expect( 0 , equals( pA2.a() ) );
+    expect(1, equals(pCombined.portIf.b()));
+    expect(0, equals(pA1.portIf.a()));
+    expect(0, equals(pA2.a()));
   });
-  test('port_proxy_test' , () {
+  test('port_proxy_test', () {
     OtherComponent otherComponent = OtherComponent();
     APort pA2c = APort('pA2c');
     APort pA2d = APort('pA2c');
 
-    pA2c.implementedBy( otherComponent.cProxy );
-    pA2d.implementedBy( otherComponent.dProxy );
+    pA2c.implementedBy(otherComponent.cProxy);
+    pA2d.implementedBy(otherComponent.dProxy);
 
     pA2c.doConnections();
     pA2d.doConnections();
 
-    expect( 2 , equals( pA2c.a() ) );
-    expect( 3 , equals( pA2d.a() ) );
+    expect(2, equals(pA2c.a()));
+    expect(3, equals(pA2d.a()));
   });
-  test('connection error' , () {
+  test('connection error', () {
     bool ok = true;
-    try
-    {
+    try {
       Port<A> aPort = Port('a');
       aPort.portIf.a();
-    }
-    on ProbableConnectionError catch( e )
-    {
+    } on ProbableConnectionError catch (e) {
       print('expected error $e');
       ok = false;
     }
-    expect( ok , false );
+    expect(ok, false);
   });
 }

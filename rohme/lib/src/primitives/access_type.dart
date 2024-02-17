@@ -14,20 +14,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 /// An enum used to control [DmiHint] Requests, [Register] and [Field] accesses
 enum AccessType {
-  read( 0x1 ),
-  write( 0x2 ) ,
-  readWrite( 0x3 );
+  read(0x1),
+  write(0x2),
+  readWrite(0x3);
 
   const AccessType(this.value);
   final int value;
 
-  bool isReadAccess()
-  {
+  bool isReadAccess() {
     return (value & read.value) != 0;
   }
 
-  bool isWriteAccess()
-  {
+  bool isWriteAccess() {
     return (value & write.value) != 0;
   }
 }

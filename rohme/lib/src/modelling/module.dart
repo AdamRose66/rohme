@@ -21,8 +21,7 @@ import '../simulator.dart';
 /// also be named components, although if they need an export then they have to
 /// inherit from [Module]
 ///
-class NamedComponent
-{
+class NamedComponent {
   /// the leaf level name of this component
   final String name;
 
@@ -32,29 +31,25 @@ class NamedComponent
   /// gets the full Hierarchical name of this component
   String get fullName => parent == null ? name : '${parent!.fullName}.$name';
 
-  NamedComponent( this.name , this.parent )
-  {
-    parent?.addChild( this );
+  NamedComponent(this.name, this.parent) {
+    parent?.addChild(this);
   }
 
   /// A convenience to add [name] and elapsed time to a print message
-  void mPrint( String message )
-  {
+  void mPrint(String message) {
     print('$name ( ${simulator.elapsed} ): $message');
   }
 }
 
 /// Modules are NamedComponents that have children and phase methods
-class Module extends NamedComponent
-{
+class Module extends NamedComponent {
   List<NamedComponent> children = [];
 
-  Module( super.name , [super.parent] );
+  Module(super.name, [super.parent]);
 
   /// adds a child to this Module
-  void addChild( NamedComponent child )
-  {
-    children.add( child );
+  void addChild(NamedComponent child) {
+    children.add(child);
   }
 
   /// Override this method in subclasses to do the port connections.
@@ -68,12 +63,9 @@ class Module extends NamedComponent
   /// used by the infrastucture to call [PortBase.doConnections] for those
   /// ports that have nothing connected to them.
   void postConnect() {
-    for( NamedComponent c in children )
-    {
-      if( c is PortBase )
-      {
-        if( c.isStartPort )
-        {
+    for (NamedComponent c in children) {
+      if (c is PortBase) {
+        if (c.isStartPort) {
           c.doConnections();
         }
       }
@@ -101,15 +93,13 @@ class Module extends NamedComponent
 ///
 /// Visits m and all all its recursive children in depth first order, calling
 /// [topDown] as it descends and [bottomUp] as it pops back up.
-void visit( Module m , {void Function( Module)? topDown, void Function( Module)? bottomUp } ) async
-{
-  topDown?.call( m );
-  for( NamedComponent c in m.children )
-  {
-    if( c is Module )
-    {
-      visit( c , topDown : topDown , bottomUp : bottomUp );
+void visit(Module m,
+    {void Function(Module)? topDown, void Function(Module)? bottomUp}) async {
+  topDown?.call(m);
+  for (NamedComponent c in m.children) {
+    if (c is Module) {
+      visit(c, topDown: topDown, bottomUp: bottomUp);
     }
   }
-  bottomUp?.call( m );
+  bottomUp?.call(m);
 }

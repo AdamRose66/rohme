@@ -8,12 +8,10 @@
 // digital hardware systems.
 //
 
-extension PicoSecondDuration on Duration
-{
+extension PicoSecondDuration on Duration {
   /// converts a [Duration] to picoseconds, to enable [Duration] to [SimDuration]
   /// conversion
-  int get inPicoseconds
-  {
+  int get inPicoseconds {
     // ignore: unnecessary_this
     return this.inMicroseconds * SimDuration.picosecondsPerMicrosecond;
   }
@@ -57,27 +55,25 @@ class SimDuration implements Duration {
 
   /// The number of picoseconds per Microsecond
   static const int picosecondsPerMicrosecond =
-    picosecondsPerNanosecond * nanosecondsPerMicrosecond;
+      picosecondsPerNanosecond * nanosecondsPerMicrosecond;
 
   /// The number of picoseconds per Millisecond
   static const int picosecondsPerMillisecond =
-    picosecondsPerMicrosecond * microsecondsPerMillisecond;
+      picosecondsPerMicrosecond * microsecondsPerMillisecond;
 
   /// The number of picoseconds per second
   static const int picosecondsPerSecond =
-    picosecondsPerMillisecond * millisecondsPerSecond;
+      picosecondsPerMillisecond * millisecondsPerSecond;
 
   /// The number of picoseconds per minute
   static const int picosecondsPerMinute =
-    picosecondsPerSecond * secondsPerMinute;
+      picosecondsPerSecond * secondsPerMinute;
 
   /// The number of picoseconds per hour
-  static const int picosecondsPerHour =
-    picosecondsPerMinute * minutesPerHour;
+  static const int picosecondsPerHour = picosecondsPerMinute * minutesPerHour;
 
   /// The number of picoseconds per day
-  static const int picosecondsPerDay =
-    picosecondsPerHour * hoursPerDay;
+  static const int picosecondsPerDay = picosecondsPerHour * hoursPerDay;
 
   /// The number of microseconds per second.
   static const int microsecondsPerSecond =
@@ -159,7 +155,7 @@ class SimDuration implements Duration {
             picosecondsPerHour * hours +
             picosecondsPerDay * days);
 
-  SimDuration.fromDuration( Duration d ) : this( microseconds : d.inMicroseconds );
+  SimDuration.fromDuration(Duration d) : this(microseconds: d.inMicroseconds);
 
   // Fast path internal direct constructor to avoids the optional arguments
   // and [_picoseconds] recomputation.
@@ -170,11 +166,10 @@ class SimDuration implements Duration {
   /// returns the sum as a new SimDuration object.
   @override
   SimDuration operator +(Duration other) {
-    if( other is SimDuration ) {
+    if (other is SimDuration) {
       return SimDuration._picoseconds(_simDuration + other._simDuration);
-    }
-    else {
-      return SimDuration._picoseconds(_simDuration + other.inPicoseconds );
+    } else {
+      return SimDuration._picoseconds(_simDuration + other.inPicoseconds);
     }
   }
 
@@ -182,12 +177,9 @@ class SimDuration implements Duration {
   /// returns the difference as a new SimDuration object.
   @override
   SimDuration operator -(Duration other) {
-    if( other is SimDuration )
-    {
+    if (other is SimDuration) {
       return SimDuration._picoseconds(_simDuration - other._simDuration);
-    }
-    else
-    {
+    } else {
       return SimDuration._picoseconds(_simDuration - other.inPicoseconds);
     }
   }
@@ -217,13 +209,10 @@ class SimDuration implements Duration {
 
   /// Whether this [SimDuration] is shorter than [other].
   @override
-  bool operator <(Duration other)
-  {
-    if( other is SimDuration ) {
+  bool operator <(Duration other) {
+    if (other is SimDuration) {
       return _simDuration < other._simDuration;
-    }
-    else
-    {
+    } else {
       return _simDuration < other.inPicoseconds;
     }
   }
@@ -231,12 +220,9 @@ class SimDuration implements Duration {
   /// Whether this [SimDuration] is longer than [other].
   @override
   bool operator >(Duration other) {
-    if( other is SimDuration )
-    {
+    if (other is SimDuration) {
       return _simDuration > other._simDuration;
-    }
-    else
-    {
+    } else {
       return _simDuration > other.inPicoseconds;
     }
   }
@@ -244,11 +230,9 @@ class SimDuration implements Duration {
   /// Whether this [SimDuration] is shorter than or equal to [other].
   @override
   bool operator <=(Duration other) {
-    if( other is SimDuration ) {
+    if (other is SimDuration) {
       return _simDuration <= other._simDuration;
-    }
-    else
-    {
+    } else {
       return _simDuration <= other.inPicoseconds;
     }
   }
@@ -256,12 +240,9 @@ class SimDuration implements Duration {
   /// Whether this [SimDuration] is longer than or equal to [other].
   @override
   bool operator >=(Duration other) {
-    if( other is SimDuration )
-    {
+    if (other is SimDuration) {
       return _simDuration >= other._simDuration;
-    }
-    else
-    {
+    } else {
       return _simDuration >= other.inPicoseconds;
     }
   }
@@ -323,7 +304,8 @@ class SimDuration implements Duration {
   /// print(SimDuration.inMilliseconds); // 3125
   /// ```
   @override
-  int get inMilliseconds => _simDuration ~/ SimDuration.picosecondsPerMillisecond;
+  int get inMilliseconds =>
+      _simDuration ~/ SimDuration.picosecondsPerMillisecond;
 
   /// The number of whole microseconds spanned by this [SimDuration].
   ///
@@ -336,10 +318,12 @@ class SimDuration implements Duration {
   /// print(SimDuration.inMicroseconds); // 3125369
   /// ```
   @override
-  int get inMicroseconds => _simDuration ~/ SimDuration.picosecondsPerMicrosecond;
+  int get inMicroseconds =>
+      _simDuration ~/ SimDuration.picosecondsPerMicrosecond;
 
   /// The number of whole nanoseconds spanned by this [SimDuration].
-  int get inNanoseconds => _simDuration ~/ SimDuration.nanosecondsPerMicrosecond;
+  int get inNanoseconds =>
+      _simDuration ~/ SimDuration.nanosecondsPerMicrosecond;
 
   /// The number of whole picoseconds spanned by this [SimDuration].
   int get inPicoseconds => _simDuration;
@@ -350,11 +334,9 @@ class SimDuration implements Duration {
   /// of picoseconds, as reported by [inPicoseconds].
   @override
   bool operator ==(Object other) {
-    if( other is SimDuration ) {
+    if (other is SimDuration) {
       return _simDuration == other._simDuration;
-    }
-    else if( other is Duration )
-    {
+    } else if (other is Duration) {
       return _simDuration == other.inPicoseconds;
     }
     return false;
@@ -374,12 +356,9 @@ class SimDuration implements Duration {
   /// `(someDate + SimDuration1).compareTo(someDate + SimDuration2) < 0`.
   @override
   int compareTo(Duration other) {
-    if( other is SimDuration)
-    {
+    if (other is SimDuration) {
       return _simDuration.compareTo(other._simDuration);
-    }
-    else
-    {
+    } else {
       return _simDuration.compareTo(other.inPicoseconds);
     }
   }
@@ -397,13 +376,12 @@ class SimDuration implements Duration {
   /// ```
   @override
   String toString() {
-    String durationString = Duration( microseconds : inMicroseconds).toString();
+    String durationString = Duration(microseconds: inMicroseconds).toString();
 
     var picoseconds = inPicoseconds;
-    picoseconds = picoseconds.remainder( picosecondsPerMicrosecond );
+    picoseconds = picoseconds.remainder(picosecondsPerMicrosecond);
 
-    if( picoseconds == 0 )
-    {
+    if (picoseconds == 0) {
       return durationString;
     }
 

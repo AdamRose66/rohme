@@ -59,34 +59,37 @@ late final Module top;
 /// Any interaction with the Dart scheduler has to be inside the [Zone] created
 /// by [simulator]. So the top level module has to be created inside [simulator]
 /// using createTop.
-Future<void> simulateModel( Module Function() createTop ,
-                           { SimDuration clockPeriod = const SimDuration( picoseconds : 1 ) ,
-                             SimDuration duration = const SimDuration(seconds:1) } ) async
-{
-  _simulator = Simulator( clockPeriod : clockPeriod );
+Future<void> simulateModel(Module Function() createTop,
+    {SimDuration clockPeriod = const SimDuration(picoseconds: 1),
+    SimDuration duration = const SimDuration(seconds: 1)}) async {
+  _simulator = Simulator(clockPeriod: clockPeriod);
 
-  simulator.run( (async) {
+  simulator.run((async) {
     top = createTop();
 
     // a bit of hierarchy debug
-    visit( top , topDown : ( Module m ) {
+    visit(top, topDown: (Module m) {
       print('instance ${m.fullName} type ${m.runtimeType}');
 
-      for( NamedComponent c in m.children )
-      {
-        if( c is! Module )
-        {
+      for (NamedComponent c in m.children) {
+        if (c is! Module) {
           print('instance ${c.fullName} type ${c.runtimeType}');
         }
       }
-    } );
+    });
 
     // the three explicit phases
-    visit( top , bottomUp : ( Module m ) { m.connect(); } );
-    visit( top , bottomUp : ( Module m ) { m.postConnect(); } );
+    visit(top, bottomUp: (Module m) {
+      m.connect();
+    });
+    visit(top, bottomUp: (Module m) {
+      m.postConnect();
+    });
 
-    visit( top , bottomUp : ( Module m ) { m.run(); } );
+    visit(top, bottomUp: (Module m) {
+      m.run();
+    });
   });
 
-  simulator.elapse( duration );
+  simulator.elapse(duration);
 }

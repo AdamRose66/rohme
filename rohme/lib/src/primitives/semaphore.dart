@@ -15,17 +15,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 import 'dart:async';
 
 /// An acquire / release protoocol for a Semaphore
-abstract interface class SemaphoreIf
-{
-  Future<void> acquire( {int n = 1 , String? threadName} );
-  Future<void> release( {int n = 1 , String? threadName} );
+abstract interface class SemaphoreIf {
+  Future<void> acquire({int n = 1, String? threadName});
+  Future<void> release({int n = 1, String? threadName});
 }
 
 /// A lock/unlock protoocol for a Semaphore
-abstract interface class MutexIf
-{
-  Future<void> lock( [String? threadName]);
-  Future<void> unlock( [String? threadName] );
+abstract interface class MutexIf {
+  Future<void> lock([String? threadName]);
+  Future<void> unlock([String? threadName]);
 }
 
 /// Models a Semaphore.
@@ -41,8 +39,7 @@ abstract interface class MutexIf
 /// ```
 /// releases n resources
 ///
-class Semaphore implements SemaphoreIf
-{
+class Semaphore implements SemaphoreIf {
   int _remaining;
 
   /// The name of the Semaphore
@@ -54,9 +51,8 @@ class Semaphore implements SemaphoreIf
   /// The initial ( and maximum ) number of resources owned by the [Semaphore]
   final int size;
 
-  Semaphore( this.name , {this.size = 1} ) : _remaining = size
-  {
-    if( size < 1 ) throw SemaphoreSizeError( name , size );
+  Semaphore(this.name, {this.size = 1}) : _remaining = size {
+    if (size < 1) throw SemaphoreSizeError(name, size);
   }
 
   /// The number of the Semaphore's resources that have been consumed
@@ -74,35 +70,35 @@ class Semaphore implements SemaphoreIf
   /// is one. If [threadName] is not null, then debug messages are turned on.
   ///
   @override
-  Future<void> release( {int n = 1 , String? threadName} ) async
-  {
+  Future<void> release({int n = 1, String? threadName}) async {
     _remaining += n;
-    if( threadName != null ) {
-      print('  release $threadName immediately releasing $n resources ( $_remaining now available )');
+    if (threadName != null) {
+      print(
+          '  release $threadName immediately releasing $n resources ( $_remaining now available )');
     }
 
-    try
-    {
-      AcquireRequest acquireRequest = _acquireRequests.firstWhere( (item) { return item.requested <= available; } );
+    try {
+      AcquireRequest acquireRequest = _acquireRequests.firstWhere((item) {
+        return item.requested <= available;
+      });
 
-      if( threadName != null )
-      {
-        print('  release $threadName issuing completion for $n resources to ${acquireRequest.name}');
+      if (threadName != null) {
+        print(
+            '  release $threadName issuing completion for $n resources to ${acquireRequest.name}');
       }
 
-      _acquireRequests.remove( acquireRequest );
+      _acquireRequests.remove(acquireRequest);
       acquireRequest.completer.complete();
-    }
-    on StateError
-    {
-      if( threadName != null ) {
-        print('  release $threadName despite release $n there are no acquireRequests can be completed');
+    } on StateError {
+      if (threadName != null) {
+        print(
+            '  release $threadName despite release $n there are no acquireRequests can be completed');
       }
     }
 
     // give just released acquire request time to grab some resources
     // before this thread unfairly regrabs them.
-    await Future.delayed( Duration.zero );
+    await Future.delayed(Duration.zero);
   }
 
   /// Acquires n resources
@@ -110,88 +106,81 @@ class Semaphore implements SemaphoreIf
   /// Waits a delta at the end to ensure fairness, so should nearly always
   /// be called using await.
   @override
-  Future<void> acquire( {int n = 1 , String? threadName} ) async
-  {
-    if( threadName != null ) {
-      print('  acquire $threadName would like to acquire $n resources when $_remaining are available');
+  Future<void> acquire({int n = 1, String? threadName}) async {
+    if (threadName != null) {
+      print(
+          '  acquire $threadName would like to acquire $n resources when $_remaining are available');
       print('  acquireRequests list length ${_acquireRequests.length}');
     }
 
     // we put this request in the queue if either there are others pending or
     // the request cannot be serviced
-    if( _acquireRequests.isNotEmpty || n > available )
-    {
-      if( threadName != null )
-      {
-        print('  acquire $threadName adding $n requests to queue ($_remaining are available)');
+    if (_acquireRequests.isNotEmpty || n > available) {
+      if (threadName != null) {
+        print(
+            '  acquire $threadName adding $n requests to queue ($_remaining are available)');
       }
 
-      AcquireRequest acquireRequest = AcquireRequest(n , threadName);
-      _acquireRequests.add( acquireRequest );
+      AcquireRequest acquireRequest = AcquireRequest(n, threadName);
+      _acquireRequests.add(acquireRequest);
       await acquireRequest.completer.future;
 
-      if( threadName != null )
-      {
+      if (threadName != null) {
         print('  acquire $threadName has been completed');
       }
     }
 
-    assert( n <= available );
+    assert(n <= available);
 
     // immediately acquire resources
     _remaining -= n;
-    if( threadName != null ) {
-      print('  acquire $threadName: just acquired $n resources - $_remaining are now available');
+    if (threadName != null) {
+      print(
+          '  acquire $threadName: just acquired $n resources - $_remaining are now available');
     }
 
     // give other threads a chance to run
-    await Future.delayed( Duration.zero );
+    await Future.delayed(Duration.zero);
   }
 }
 
 ///
 /// A Mutex is a Semaphore of size one with different names for the methods.
 ///
-class Mutex extends Semaphore implements MutexIf
-{
-  Mutex( super.name );
+class Mutex extends Semaphore implements MutexIf {
+  Mutex(super.name);
 
   /// acquires a single resource
   @override
-  Future<void> lock( [String? threadName] ) async
-  {
-    await acquire( threadName: threadName );
+  Future<void> lock([String? threadName]) async {
+    await acquire(threadName: threadName);
   }
 
   /// releases a single resource
   @override
-  Future<void> unlock( [String? threadName] ) async
-  {
-    await release( threadName: threadName );
+  Future<void> unlock([String? threadName]) async {
+    await release(threadName: threadName);
   }
 }
 
 /// An internal class for [Semaphore]
-class AcquireRequest
-{
+class AcquireRequest {
   final Completer<void> completer = Completer();
   final int requested;
   final String? name;
 
-  AcquireRequest( this.requested , this.name );
+  AcquireRequest(this.requested, this.name);
 }
 
 /// Thrown by a [Semaphore] when size is <1.
-class SemaphoreSizeError implements Exception
-{
+class SemaphoreSizeError implements Exception {
   int size;
   String name;
 
-  SemaphoreSizeError( this.name , this.size );
+  SemaphoreSizeError(this.name, this.size);
 
   @override
-  String toString()
-  {
+  String toString() {
     return 'Semaphore $name: size must be one or more, not $size';
   }
 }

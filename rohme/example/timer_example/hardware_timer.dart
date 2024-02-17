@@ -1,4 +1,3 @@
-
 /*
 Copyright 2024 Adam Rose
 
@@ -16,22 +15,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 import 'package:rohme/rohme.dart';
 import 'register_map.dart';
 
-class HardWareTimer extends Module
-{
+class HardWareTimer extends Module {
   // external connections
   late final SignalWritePort irq;
 
   // internal fields and registers
-  late final Register _timeRegister , _controlRegister , _elapsedRegister;
-  late final Field _startField , _stopField , _continuousField;
+  late final Register _timeRegister, _controlRegister, _elapsedRegister;
+  late final Field _startField, _stopField, _continuousField;
 
   // internal variables
   bool carryOn = false;
 
-  HardWareTimer( super.name , [super.parent] )
-  {
+  HardWareTimer(super.name, [super.parent]) {
     // create the irq port used to communicate with the outside world
-    irq = SignalWritePort('irq',this);
+    irq = SignalWritePort('irq', this);
 
     // get the registers from the register map
     _timeRegister = registerMap.getByName('TIMER.TIME');
@@ -44,8 +41,12 @@ class HardWareTimer extends Module
     _continuousField = _controlRegister['CONTINUOUS'];
 
     // set the callbacks used when we see an external write
-    _startField.onWrite = ( data ) { controlStartWrite(); };
-    _stopField.onWrite = ( data ) { controlStopWrite(); };
+    _startField.onWrite = (data) {
+      controlStartWrite();
+    };
+    _stopField.onWrite = (data) {
+      controlStopWrite();
+    };
   }
 
   // the internal getters used by this model
@@ -56,9 +57,9 @@ class HardWareTimer extends Module
   bool get _continuous => _continuousField.peek() != 0;
 
   // the internal setters used by this model
-  set _elapsed( int v ) => _elapsedRegister.poke( v );
-  set _start( bool b ) => _startField.poke( b ? 1 : 0 );
-  set _stop( bool b ) => _stopField.poke( b ? 1 : 0 );
+  set _elapsed(int v) => _elapsedRegister.poke(v);
+  set _start(bool b) => _startField.poke(b ? 1 : 0);
+  set _stop(bool b) => _stopField.poke(b ? 1 : 0);
 
   // This future is called when we see a CONTROL.START
   //
@@ -71,27 +72,26 @@ class HardWareTimer extends Module
 
     bool wasContinuousAtBeginning = _continuous;
 
-    for( bool carryOn = await timerLoop();
-         wasContinuousAtBeginning && carryOn && _start;
-         carryOn = await timerLoop() ) {}
+    for (bool carryOn = await timerLoop();
+        wasContinuousAtBeginning && carryOn && _start;
+        carryOn = await timerLoop()) {}
   }
 
   // The core timer loop.
   //
   // It awaits _time clocks and if the clock has not been cancelled and the
   // timer has not been stopped, it creates a delta cycle glitch on the irq
-  Future<bool> timerLoop() async
-  {
-    await clockDelay( _time );
+  Future<bool> timerLoop() async {
+    await clockDelay(_time);
 
-    if( _stop ) {
+    if (_stop) {
       return false;
     }
 
     _elapsed++;
 
-    await irq.nba( 1 );
-    await irq.nba( 0 );
+    await irq.nba(1);
+    await irq.nba(0);
 
     return true;
   }
