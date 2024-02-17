@@ -98,7 +98,7 @@ class Port<IF extends Object> extends PortBase
 
     if( debugConnections )
     {
-      print('Connections Debug: Connecting $fullName type $runtimeType to $p.fullName type $p.runtimeType');
+      print('Connections Debug: Connecting $fullName type $runtimeType to ${p.fullName} type ${p.runtimeType}');
     }
   }
 
