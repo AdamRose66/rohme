@@ -176,6 +176,7 @@ void main() async {
         }
 
         expect( ok , false );
+        expect( clockZone1.clockName , clockZone1.name );
       });
 
       simulator.elapse( SimDuration( picoseconds : 1000 ) );

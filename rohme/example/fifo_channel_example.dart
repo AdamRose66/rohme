@@ -14,6 +14,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 import 'package:rohme/rohme.dart';
 
+void main() {
+  simulateModel( () { return Top('top'); } );
+}
+
 class Top extends Module
 {
   late final Producer producer;
@@ -89,10 +93,4 @@ class PutPort extends Port<FifoPutIf<int>> implements FifoPutIf<int>
 class GetPort extends Port<FifoGetIf<int>> implements FifoGetIf<int>
 {
   GetPort( super.name , [super.parent] );
-}
-
-void main() {
-//  Top top = Top('top');
-
-  simulateModel( () { return Top('top'); } );
 }

@@ -288,6 +288,6 @@ class RouterDecodeError implements Exception
   @override
   String toString()
   {
-    return '$routerName Cannot Decode $command ${addr.hex}';
+    return '$routerName Cannot Decode $command ${addr.hex()}';
   }
 }

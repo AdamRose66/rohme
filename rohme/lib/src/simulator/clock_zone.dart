@@ -17,7 +17,7 @@ import '../modelling/port.dart';
 
 import 'dart:async';
 
-/// waits n ticks, as defined by zone[#clockPeriod]
+/// waits n ticks, as defined by the zone's clockPeriod.
 ///
 /// The clockPeriod is defined in the constructor of [Simulator] or [ClockZone]
 /// and is passed into the Zone as a zone value. This means that

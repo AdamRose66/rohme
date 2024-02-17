@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 import '../modelling/port.dart';
 import '../primitives/access_type.dart';
 import 'bus_data.dart';
+import '../utils.dart';
 
 /// Provides Direct Memory Access to a memory
 ///
@@ -117,7 +118,7 @@ class AlignmentError implements Exception
   @override
   String toString()
   {
-    return 'AlignmentError: $addr.hex is not aligned to $alignment bytes';
+    return 'AlignmentError: ${addr.hex()} is not aligned to $alignment bytes';
   }
 }
 
@@ -133,6 +134,6 @@ class NoDmiHint implements Exception
   @override
   String toString()
   {
-    return '$name: no Dmi Hint for address $addr.hex access type $accessType';
+    return '$name: no Dmi Hint for address ${addr.hex()} access type $accessType';
   }
 }

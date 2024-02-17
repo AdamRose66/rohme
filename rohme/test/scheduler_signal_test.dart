@@ -114,5 +114,22 @@ void main() {
       await Future.delayed( SimDuration.zero );
       expect( s.currentValue , 5 );
     });
+
+    test('signal port test' , () async {
+      Signal s = Signal();
+
+      SignalReadPort signalReadPort = SignalReadPort('readPort',null);
+      SignalWritePort signalWritePort = SignalWritePort('writePort',null);
+
+      signalWritePort.implementedBy( s );
+      signalReadPort.implementedBy( s );
+
+      SignalReadIf readIf = signalReadPort;
+      SignalWriteIf writeIf = signalWritePort;
+
+      writeIf.nba( 4 );
+      await Future.delayed( SimDuration.zero );
+      expect( readIf.currentValue , 4 );
+    });
   });
 }

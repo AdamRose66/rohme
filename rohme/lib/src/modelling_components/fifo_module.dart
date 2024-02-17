@@ -37,7 +37,7 @@ class FifoModule<T> extends Module implements FifoPutIf<T> , FifoGetIf<T>
   //
   // The [size] is the maximum size of the buffer.
   //
-  FifoModule( super.name , super.paret , {duration = Duration.zero , int size = 1} )
+  FifoModule( super.name , super.parent , {duration = Duration.zero , int size = 1} )
   {
     _fifo = Fifo( fullName , duration:duration , size:size );
 
