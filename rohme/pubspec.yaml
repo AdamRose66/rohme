@@ -1,6 +1,6 @@
 name: rohme
-description: Upgrade to Register
-version: 1.1.0
+description: The Rapid Object orientated Hardware Modelling Environment, an environment for the modelling of digital Systems using the Dart programming Language.
+version: 1.1.1
 
 environment:
   sdk: ^3.2.4

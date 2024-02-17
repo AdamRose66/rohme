@@ -14,3 +14,7 @@ combined masks of the Fields ( subject to AccessType ).
 
 - Register API is now read/write, peek poke
 - use Simulator/SimDuration rather than FakeAsync/Duration
+
+## 1.1.1
+
+- added ClockZone and associated examples
