@@ -502,10 +502,10 @@ void main() {
       Simulator().run((simulator) {
         expect(simulator.pendingTimers, isEmpty);
         final nonPeriodic =
-            Timer(const SimDuration(seconds: 1), () {}) as FakeTimer;
+            Timer(const SimDuration(seconds: 1), () {}) as SimTimer;
         final periodic =
             Timer.periodic(const SimDuration(seconds: 2), (Timer timer) {})
-                as FakeTimer;
+                as SimTimer;
         final debugInfo = simulator.pendingTimers;
         expect(debugInfo.length, 2);
         expect(
@@ -532,10 +532,10 @@ void main() {
       Simulator(includeTimerStackTrace: false).run((simulator) {
         expect(simulator.pendingTimers, isEmpty);
         final nonPeriodic =
-            Timer(const SimDuration(seconds: 1), () {}) as FakeTimer;
+            Timer(const SimDuration(seconds: 1), () {}) as SimTimer;
         final periodic =
             Timer.periodic(const SimDuration(seconds: 2), (Timer timer) {})
-                as FakeTimer;
+                as SimTimer;
         final debugInfo = simulator.pendingTimers;
         expect(debugInfo.length, 2);
         expect(

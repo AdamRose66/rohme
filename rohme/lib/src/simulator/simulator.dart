@@ -79,10 +79,10 @@ class Simulator {
   final _microtasks = Queue<_Microtask>();
 
   /// A set consisting of the pending but not executed timers.
-  final _timers = <FakeTimer>{};
+  final _timers = <SimTimer>{};
 
   /// All the current pending timers.
-  List<FakeTimer> get pendingTimers => _timers.toList(growable: false);
+  List<SimTimer> get pendingTimers => _timers.toList(growable: false);
 
   /// The debug strings for all the current pending timers.
   List<String> get pendingTimersDebugString =>
@@ -216,12 +216,12 @@ class Simulator {
   ///
   /// Microtasks are flushed before and after each timer is fired. Before each
   /// timer fires, [_elapsed] is updated to the appropriate duration.
-  void _fireTimersWhile(bool Function(FakeTimer timer) predicate) {
+  void _fireTimersWhile(bool Function(SimTimer timer) predicate) {
     flushMicrotasks();
     for (;;) {
       if (_timers.isEmpty) break;
 
-      final timer = minBy(_timers, (FakeTimer timer) => timer._nextCall)!;
+      final timer = minBy(_timers, (SimTimer timer) => timer._nextCall)!;
 
       if (!predicate(timer)) break;
 
@@ -238,7 +238,7 @@ class Simulator {
   Timer _createTimer(Duration duration, Function callback, bool periodic) {
     SimDuration simDuration =
         duration is SimDuration ? duration : SimDuration.fromDuration(duration);
-    final timer = FakeTimer._(simDuration, callback, periodic, this,
+    final timer = SimTimer._(simDuration, callback, periodic, this,
         includeStackTrace: includeTimerStackTrace);
     _timers.add(timer);
     return timer;
@@ -250,8 +250,8 @@ class Simulator {
   }
 
   /// removes all timers for which selector( timer.zone ) is true
-  Set<FakeTimer> suspend(Zone zone, bool Function(Zone) selector) {
-    Set<FakeTimer> selectedTimers = <FakeTimer>{};
+  Set<SimTimer> suspend(Zone zone, bool Function(Zone) selector) {
+    Set<SimTimer> selectedTimers = <SimTimer>{};
 
     _timers.removeWhere((timer) {
       bool selected = selector(timer.zone);
@@ -266,7 +266,7 @@ class Simulator {
   ///
   /// Checks that no timer in [suspendedTimers] is in the past. If it is,
   /// throws TimerNotInFuture.
-  void resume(Set<FakeTimer> suspendedTimers) {
+  void resume(Set<SimTimer> suspendedTimers) {
     // check we're not trying to resume a timer in the past
     // ignore: avoid_function_literals_in_foreach_calls
     suspendedTimers.forEach((timer) {
@@ -291,7 +291,7 @@ class TimerNotInFuture implements Exception {
 }
 
 /// An implementation of [Timer] that's controlled by a [Simulator].
-class FakeTimer implements Timer {
+class SimTimer implements Timer {
   /// If this is periodic, the time that should elapse between firings of this
   /// timer.
   ///
@@ -334,7 +334,7 @@ class FakeTimer implements Timer {
   String get debugString => 'Timer (duration: $duration, periodic: $isPeriodic)'
       '${_creationStackTrace != null ? ', created:\n$creationStackTrace' : ''}';
 
-  FakeTimer._(
+  SimTimer._(
       SimDuration duration, this._callback, this.isPeriodic, this._async,
       {bool includeStackTrace = true})
       : duration = duration < SimDuration.zero ? SimDuration.zero : duration,

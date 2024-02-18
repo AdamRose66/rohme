@@ -56,7 +56,7 @@ void main() {
     Module parent = Module('parent');
     NamedComponent child = NamedComponent('child', parent);
 
-    print('child name $child.fullName');
+    print('child name ${child.fullName}');
     expect(child.fullName, equals('parent.child'));
   });
 
@@ -80,11 +80,11 @@ void main() {
     });
 
     for (Module m in topDownList) {
-      print('Top Down $m.fullName');
+      print('Top Down ${m.fullName}');
     }
 
     for (Module m in bottomUpList) {
-      print('bottom Up $m.fullName');
+      print('bottom Up ${m.fullName}');
     }
 
     checkBottomUp(bottomUpList);

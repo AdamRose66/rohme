@@ -97,7 +97,7 @@ class ClockZone implements ClockDelayIf {
   final Zone zone;
 
   /// The set of currently suspended timers.
-  Set<FakeTimer> _suspended = <FakeTimer>{};
+  Set<SimTimer> _suspended = <SimTimer>{};
 
   /// The time of the last suspension
   SimDuration _suspensionTime = SimDuration.zero;
