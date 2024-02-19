@@ -314,6 +314,10 @@ class SimTimer implements Timer {
   /// fired.
   late SimDuration _nextCall;
 
+  /// The value of [Simulator._elapsed] at (or after) which this timer should be
+  /// fired.
+  SimDuration get nextCall => _nextCall;
+
   /// The current stack trace when this timer was created.
   ///
   /// If [Simulator.includeTimerStackTrace] is set to false then accessing

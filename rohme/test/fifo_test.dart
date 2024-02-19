@@ -58,10 +58,11 @@ void main() async {
   group('A group of tests', () {
     bool beenHere = false;
     setUp(() {
-      if (!beenHere)
+      if (!beenHere) {
         simulateModel(() {
           return Module('top');
         });
+      }
       beenHere = true;
     });
 

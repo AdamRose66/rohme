@@ -169,14 +169,14 @@ class Memory extends Module implements MemoryIf {
   }
 
   void _debugReadTransaction(int addr, int data, int bits) {
-    // ignore: unnecessary_brace_in_string_interps
-    if (debug)
-      mPrint('just read ${bits} bit ${data.hex()} from address ${addr.hex()}');
+    if (debug) {
+      mPrint('just read $bits bit ${data.hex()} from address ${addr.hex()}');
+    }
   }
 
   void _debugWriteTransaction(int addr, int data, int bits) {
-    // ignore: unnecessary_brace_in_string_interps
-    if (debug)
-      mPrint('just wrote ${bits} bit ${data.hex()} to address ${addr.hex()}');
+    if (debug) {
+      mPrint('just wrote $bits bit ${data.hex()} to address ${addr.hex()}');
+    }
   }
 }
