@@ -28,8 +28,7 @@ import 'dart:collection';
 // generalise and in fact unit test was easier with a generic class.
 
 /// An abstract interface class for use with [QueueMap]
-abstract interface class Indexable<K>
-{
+abstract interface class Indexable<K> {
   K get index;
 }
 
@@ -37,11 +36,10 @@ abstract interface class Indexable<K>
 ///
 /// [K] is the key and T must provide an index getter by implementing
 /// [Indexable]<K>.
-class QueueMapIterator<K,T extends Indexable<K>> implements Iterator<T>
-{
+class QueueMapIterator<K, T extends Indexable<K>> implements Iterator<T> {
   /// In practice, _map will be a SplayTreeMap, but we only the need the
   /// interface here, which is [Map].
-  final Map<K,Iterable<T>> _map;
+  final Map<K, Iterable<T>> _map;
 
   bool _initialised = false;
   final Iterator<K> _keyIterator;
@@ -49,19 +47,17 @@ class QueueMapIterator<K,T extends Indexable<K>> implements Iterator<T>
   bool _gotNext = true;
 
   /// The interator is initialised with a [Map], usually a [SplayTreeMap].
-  QueueMapIterator( this._map ) : _keyIterator = _map.keys.iterator;
+  QueueMapIterator(this._map) : _keyIterator = _map.keys.iterator;
 
   /// moves to the next T, returning true if there is one and false otherwise
   @override
-  bool moveNext()
-  {
-    if( !_gotNext ) {
+  bool moveNext() {
+    if (!_gotNext) {
       // this is possible if _map is empty
       return false;
     }
 
-    if( !_initialised || !_listIterator.moveNext() )
-    {
+    if (!_initialised || !_listIterator.moveNext()) {
       _initialised = true;
       _advanceQueue();
       return _gotNext;
@@ -70,15 +66,11 @@ class QueueMapIterator<K,T extends Indexable<K>> implements Iterator<T>
     return true;
   }
 
-  void _advanceQueue()
-  {
-    if( _keyIterator.moveNext() )
-    {
+  void _advanceQueue() {
+    if (_keyIterator.moveNext()) {
       _listIterator = _map[_keyIterator.current]!.iterator;
       _gotNext = _listIterator.moveNext();
-    }
-    else
-    {
+    } else {
       _gotNext = false;
     }
   }
@@ -89,13 +81,12 @@ class QueueMapIterator<K,T extends Indexable<K>> implements Iterator<T>
 }
 
 /// An iterable map of [ListQueue]<T>, ordered by K
-class QueueMap<K,T extends Indexable<K>> with Iterable<T>
-{
-  final _map = SplayTreeMap<K,ListQueue<T>>();
+class QueueMap<K, T extends Indexable<K>> with Iterable<T> {
+  final _map = SplayTreeMap<K, ListQueue<T>>();
 
   /// Returns an iterator for the [QueueMap]
   @override
-  QueueMapIterator<K,T> get iterator => QueueMapIterator( _map );
+  QueueMapIterator<K, T> get iterator => QueueMapIterator(_map);
 
   /// is the underlying map empty
   @override
@@ -106,87 +97,80 @@ class QueueMap<K,T extends Indexable<K>> with Iterable<T>
   bool get isNotEmpty => _map.isNotEmpty;
 
   /// add an [Indexable]<T> to the map, creating a new [ListQueue] if needed
-  void add( T t )
-  {
-    _map.putIfAbsent( t.index , () => ListQueue() ).add( t );
+  void add(T t) {
+    _map.putIfAbsent(t.index, () => ListQueue()).add(t);
   }
 
   /// add a [QueueMap] to 'this'
-  void addQueueMap( QueueMap<K,T> other )
-  {
-    for( T t in other )
-    {
-      add( t );
+  void addQueueMap(QueueMap<K, T> other) {
+    for (T t in other) {
+      add(t);
     }
   }
 
-  /// Return the first element of the first queue and remove it from the map
-  ///
-  /// '''dart
-  /// while( queueMap1.isNotEmpty )
-  /// {
-  ///   T t = queueMap1.popFirst();
-  ///   print('popped $t');
-  /// }
-  T popFirst()
-  {
-    // ignore: null_check_on_nullable_type_parameter
-    K firstKey = _map.firstKey()!;
-    ListQueue<T> firstQueue = _map[firstKey]!;
-
-    T t = firstQueue.first;
-
+  /// Remove the first element of the first queue from the map
+  void removeFirst() {
     firstQueue.removeFirst();
-
-    if( firstQueue.isEmpty )
-    {
-      _map.remove( firstKey );
+    if (firstQueue.isEmpty) {
+      _map.remove(_map.firstKey());
     }
-
-    return t;
   }
+
+  /// Returns the first element of the first queue
+  @override
+  T get first => firstQueue.first;
+
+  /// Returns the first queue
+  ListQueue<T> get firstQueue => _map[_map.firstKey()]!;
 
   /// remove all T's that satisfy [condition] from the map
-  void removeWhere( bool Function( T ) condition )
-  {
+  void removeWhere(bool Function(T) condition) {
     List<K> removeSlots = [];
 
-    for( K key in  _map.keys )
-    {
+    for (K key in _map.keys) {
       ListQueue<T> slot = _map[key]!;
 
-      slot.removeWhere( condition );
+      slot.removeWhere(condition);
 
-      if( slot.isEmpty )
-      {
-          removeSlots.add( key );
+      if (slot.isEmpty) {
+        removeSlots.add(key);
       }
     }
 
     // ignore: avoid_function_literals_in_foreach_calls
-    removeSlots.forEach( (key) => _map.remove( key ) );
+    removeSlots.forEach((key) => _map.remove(key));
   }
 
-  /// Moves t from k to t.index
-  ///
-  /// Returns true if [t] was in [k] to start with
-  /// if t is not in [k], then does nothing
-  bool move( K k , T t )
-  {
-    bool ok = _map[k]!.remove( t );
-    if( ok ) add( t );
-    return ok;
+  /// removes T from map - returns true if T was in map, false otherwise
+  bool remove(T t) {
+    ListQueue<T>? foundInList;
+    K? key;
+    for (key in _map.keys) {
+      ListQueue<T> list = _map[key]!;
+      if (list.remove(t)) {
+        foundInList = list;
+        break;
+      }
+    }
+
+    if (foundInList != null) {
+      if (foundInList.isEmpty) {
+        _map.remove(key!);
+      }
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /// returns a string representation of 'this'.
   @override
-  String toString()
-  {
+  String toString() {
     StringBuffer buffer = StringBuffer();
-    for( K key in _map.keys )
-    {
+    for (K key in _map.keys) {
       buffer.writeln('$key: ${_map[key]}');
     }
-    return buffer.toString().substring(0,buffer.length - 1);
+    if (buffer.length == 0) return '';
+    return buffer.toString().substring(0, buffer.length - 1);
   }
 }

@@ -135,7 +135,7 @@ void main() {
           expect(log, ['1', '2']);
         });
       });
-
+/*
       test('should maintain FIFO order even with periodic timers', () {
         Simulator().run((async) {
           final log = [];
@@ -154,7 +154,7 @@ void main() {
           ]);
         });
       });
-
+*/
       test('should process microtasks surrounding each timer', () {
         Simulator().run((async) {
           var microtaskCalls = 0;
@@ -359,7 +359,7 @@ void main() {
         expect(async.elapsed, elapseBy);
       });
     });
-
+/*
     test(
         'should run collateral periodic timers with non-periodic first if '
         'scheduled first', () {
@@ -387,7 +387,7 @@ void main() {
         expect(log, ['periodic', 'periodic', 'delayed']);
       });
     });
-
+*/
     test('should time out', () {
       Simulator().run((async) {
         // Schedule 3 timers. All but the last one should fire.

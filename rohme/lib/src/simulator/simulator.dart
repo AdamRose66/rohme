@@ -25,9 +25,8 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:collection/collection.dart';
-
 import 'sim_duration.dart';
+import 'queue_map.dart';
 
 /// The type of a microtask callback.
 typedef _Microtask = void Function();
@@ -78,8 +77,8 @@ class Simulator {
   /// Tasks that are scheduled to run when fake time progresses.
   final _microtasks = Queue<_Microtask>();
 
-  /// A set consisting of the pending but not executed timers.
-  final _timers = <SimTimer>{};
+  /// A [QueueMap] of the pending but not executed timers.
+  final _timers = QueueMap<SimDuration, SimTimer>();
 
   /// All the current pending timers.
   List<SimTimer> get pendingTimers => _timers.toList(growable: false);
@@ -221,12 +220,14 @@ class Simulator {
     for (;;) {
       if (_timers.isEmpty) break;
 
-      final timer = minBy(_timers, (SimTimer timer) => timer._nextCall)!;
+      final timer = _timers.first;
 
       if (!predicate(timer)) break;
 
+      _timers.removeFirst();
       _elapseTo(timer._nextCall);
       timer._fire();
+
       flushMicrotasks();
     }
   }
@@ -273,9 +274,8 @@ class Simulator {
       if (timer._nextCall < elapsed) {
         throw TimerNotInFuture(elapsed, timer._nextCall);
       }
+      _timers.add(timer);
     });
-
-    _timers.addAll(suspendedTimers);
   }
 }
 
@@ -291,7 +291,7 @@ class TimerNotInFuture implements Exception {
 }
 
 /// An implementation of [Timer] that's controlled by a [Simulator].
-class SimTimer implements Timer {
+class SimTimer implements Timer, Indexable<SimDuration> {
   /// If this is periodic, the time that should elapse between firings of this
   /// timer.
   ///
@@ -308,15 +308,15 @@ class SimTimer implements Timer {
   final bool isPeriodic;
 
   /// The [Simulator] instance that controls this timer.
-  final Simulator _async;
+  final Simulator _simulator;
 
   /// The value of [Simulator._elapsed] at (or after) which this timer should be
   /// fired.
   late SimDuration _nextCall;
 
-  /// The value of [Simulator._elapsed] at (or after) which this timer should be
-  /// fired.
-  SimDuration get nextCall => _nextCall;
+  /// The index used in [Simulation._timers]
+  @override
+  SimDuration get index => _nextCall;
 
   /// The current stack trace when this timer was created.
   ///
@@ -328,6 +328,7 @@ class SimTimer implements Timer {
   /// The zone in which this time was created
   final Zone zone = Zone.current;
 
+  bool _isCancelled = false;
   var _tick = 0;
 
   @override
@@ -339,29 +340,33 @@ class SimTimer implements Timer {
       '${_creationStackTrace != null ? ', created:\n$creationStackTrace' : ''}';
 
   SimTimer._(
-      SimDuration duration, this._callback, this.isPeriodic, this._async,
+      SimDuration duration, this._callback, this.isPeriodic, this._simulator,
       {bool includeStackTrace = true})
       : duration = duration < SimDuration.zero ? SimDuration.zero : duration,
         _creationStackTrace = includeStackTrace ? StackTrace.current : null {
-    _nextCall = _async._elapsed + this.duration;
+    _nextCall = _simulator._elapsed + this.duration;
   }
 
   @override
-  bool get isActive => _async._timers.contains(this);
+  bool get isActive => _simulator._timers.contains(this);
 
   @override
-  void cancel() => _async._timers.remove(this);
+  void cancel() {
+    _simulator._timers.remove(this);
+    _isCancelled = true;
+  }
 
   /// Fires this timer's callback and updates its state as necessary.
   void _fire() {
-    assert(isActive);
     _tick++;
     if (isPeriodic) {
       // ignore: avoid_dynamic_calls
       _callback(this);
-      reschedule(duration);
+      if (!_isCancelled) {
+        reschedule(duration);
+        _simulator._timers.add(this);
+      }
     } else {
-      cancel();
       // ignore: avoid_dynamic_calls
       _callback();
     }
@@ -371,4 +376,8 @@ class SimTimer implements Timer {
   void reschedule(SimDuration duration) {
     _nextCall += duration;
   }
+
+  /// a string representation of this timer
+  @override
+  String toString() => '$index periodic $isPeriodic';
 }

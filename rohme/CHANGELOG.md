@@ -18,3 +18,7 @@ combined masks of the Fields ( subject to AccessType ).
 ## 1.1.1
 
 - added ClockZone and associated examples
+
+## 1.1.2
+
+- switched Simulator to use queueMap
