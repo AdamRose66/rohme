@@ -80,8 +80,15 @@ class Simulator {
   /// A [QueueMap] of the pending but not executed timers.
   final _timers = QueueMap<SimDuration, SimTimer>();
 
+  /// The queue of timers in the current delta cycle
+  ListQueue<SimTimer> _thisDeltaQueue = ListQueue();
+
   /// All the current pending timers.
-  List<SimTimer> get pendingTimers => _timers.toList(growable: false);
+  List<SimTimer> get pendingTimers {
+    List<SimTimer> list = _thisDeltaQueue.toList();
+    list.addAll(_timers);
+    return list;
+  }
 
   /// The debug strings for all the current pending timers.
   List<String> get pendingTimersDebugString =>
@@ -89,10 +96,12 @@ class Simulator {
 
   /// The number of active periodic timers created within a call to [run].
   int get periodicTimerCount =>
+      _thisDeltaQueue.where((timer) => timer.isPeriodic).length +
       _timers.where((timer) => timer.isPeriodic).length;
 
   /// The number of active non-periodic timers created within a call to [run]
   int get nonPeriodicTimerCount =>
+      _thisDeltaQueue.where((timer) => !timer.isPeriodic).length +
       _timers.where((timer) => !timer.isPeriodic).length;
 
   /// The number of pending microtasks scheduled within a call to [run]
@@ -138,7 +147,7 @@ class Simulator {
     }
 
     _elapsingTo = _elapsed + duration;
-    _fireTimersWhile((next) => next._nextCall <= _elapsingTo!);
+    _fireTimersWhile((callTime) => callTime <= _elapsingTo!);
     _elapseTo(_elapsingTo!);
     _elapsingTo = null;
   }
@@ -194,8 +203,8 @@ class Simulator {
       {SimDuration timeout = const SimDuration(hours: 1),
       bool flushPeriodicTimers = true}) {
     final absoluteTimeout = _elapsed + timeout;
-    _fireTimersWhile((timer) {
-      if (timer._nextCall > absoluteTimeout) {
+    _fireTimersWhile((callTime) {
+      if (callTime > absoluteTimeout) {
         // TODO(nweiz): Make this a [TimeoutException].
         throw StateError('Exceeded timeout $timeout while flushing timers');
       }
@@ -215,27 +224,27 @@ class Simulator {
   ///
   /// Microtasks are flushed before and after each timer is fired. Before each
   /// timer fires, [_elapsed] is updated to the appropriate duration.
-  void _fireTimersWhile(bool Function(SimTimer timer) predicate) {
-    flushMicrotasks();
-    for (;;) {
-      if (_timers.isEmpty) break;
+  void _fireTimersWhile(bool Function(SimDuration callTime) predicate) {
+    for (flushMicrotasks(); _timers.isNotEmpty; flushMicrotasks()) {
+      SimDuration deltaTime = _timers.firstKey;
 
-      final timer = _timers.first;
+      if (!predicate(deltaTime)) {
+        break;
+      }
 
-      if (!predicate(timer)) break;
+      _elapseTo(deltaTime);
+      _thisDeltaQueue = _timers.removeFirstQueue();
 
-      _timers.removeFirst();
-      _elapseTo(timer._nextCall);
-      timer._fire();
-
-      flushMicrotasks();
+      while (_thisDeltaQueue.isNotEmpty) {
+        final timer = _thisDeltaQueue.removeFirst();
+        assert(timer._nextCall == deltaTime);
+        timer._fire();
+      }
     }
   }
 
   /// Creates a new timer controlled by `this` that fires [callback] after
   /// [duration] (or every [duration] if [periodic] is `true`).
-  ///
-  ///
   Timer _createTimer(Duration duration, Function callback, bool periodic) {
     SimDuration simDuration =
         duration is SimDuration ? duration : SimDuration.fromDuration(duration);
@@ -253,6 +262,12 @@ class Simulator {
   /// removes all timers for which selector( timer.zone ) is true
   Set<SimTimer> suspend(Zone zone, bool Function(Zone) selector) {
     Set<SimTimer> selectedTimers = <SimTimer>{};
+
+    _thisDeltaQueue.removeWhere((timer) {
+      bool selected = selector(timer.zone);
+      if (selected) selectedTimers.add(timer);
+      return selected;
+    });
 
     _timers.removeWhere((timer) {
       bool selected = selector(timer.zone);

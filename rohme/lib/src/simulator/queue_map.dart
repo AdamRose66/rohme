@@ -80,6 +80,9 @@ class QueueMapIterator<K, T extends Indexable<K>> implements Iterator<T> {
   T get current => _listIterator.current;
 }
 
+// SimDuration deltaTime = _timers.firstKey;
+// _thisDeltaQueue = _timers.removeFirstQueue()!;
+
 /// An iterable map of [ListQueue]<T>, ordered by K
 class QueueMap<K, T extends Indexable<K>> with Iterable<T> {
   final _map = SplayTreeMap<K, ListQueue<T>>();
@@ -120,8 +123,16 @@ class QueueMap<K, T extends Indexable<K>> with Iterable<T> {
   @override
   T get first => firstQueue.first;
 
+  /// Returns the first key in the map
+  K get firstKey => _map.firstKey()!;
+
   /// Returns the first queue
   ListQueue<T> get firstQueue => _map[_map.firstKey()]!;
+
+  /// Returns the first queue and removes it from map
+  ListQueue<T> removeFirstQueue() {
+    return _map.remove(firstKey)!;
+  }
 
   /// remove all T's that satisfy [condition] from the map
   void removeWhere(bool Function(T) condition) {

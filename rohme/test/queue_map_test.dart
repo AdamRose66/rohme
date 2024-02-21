@@ -12,6 +12,14 @@ class Dummy implements Indexable<SimDuration> {
 
   @override
   SimDuration get index => t;
+
+  @override
+  bool operator ==(covariant Dummy other) {
+    return x == other.x && t == other.t;
+  }
+
+  @override
+  int get hashCode => x + t.inPicoseconds;
 }
 
 void main() {
@@ -67,5 +75,29 @@ void main() {
       print('Even only\n$queueMap2');
       expect(queueMap2.every((d) => (d.x % 2) == 0), true);
     });
+  });
+  test('first queue test', () {
+    QueueMap<SimDuration, Dummy> queueMap = QueueMap();
+
+    queueMap
+      ..add(Dummy(3, SimDuration.zero))
+      ..add(Dummy(6, SimDuration(picoseconds: 10)))
+      ..add(Dummy(4, SimDuration.zero))
+      ..add(Dummy(7, SimDuration(picoseconds: 10)))
+      ..add(Dummy(5, SimDuration.zero))
+      ..add(Dummy(8, SimDuration(picoseconds: 10)));
+
+    expect(queueMap.firstKey, SimDuration.zero);
+    var removedQueue = queueMap.removeFirstQueue();
+
+    print('queueMap\n${queueMap}');
+
+    expect(queueMap.firstKey, SimDuration(picoseconds: 10));
+
+    expect(removedQueue.toList(),
+        [3, 4, 5].map((i) => Dummy(i, SimDuration.zero)));
+
+    expect(queueMap.firstQueue.toList(),
+        [6, 7, 8].map((i) => Dummy(i, SimDuration(picoseconds: 10))));
   });
 }

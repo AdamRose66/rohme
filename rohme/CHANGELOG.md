@@ -21,4 +21,4 @@ combined masks of the Fields ( subject to AccessType ).
 
 ## 1.1.2
 
-- switched Simulator to use queueMap
+- switched Simulator to use queueMap, microtasks now respect delta cycles
