@@ -329,7 +329,7 @@ class SimTimer implements Timer, Indexable<SimDuration> {
   /// fired.
   late SimDuration _nextCall;
 
-  /// The index used in [Simulation._timers]
+  /// The index used in [Simulator._timers]
   @override
   SimDuration get index => _nextCall;
 
