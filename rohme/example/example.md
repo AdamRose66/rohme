@@ -25,6 +25,10 @@ The timer example has a memory mapped hardware timer. The registers are 'program
 
 An ISR is connected to a Signal, which triggers each time the hardware 'continuous' timer expires.
 
+The hardware time has two implementations : a native Rohme verion and an RTL version written in Rohd. It is possible to switch between the two implementations on the command line:
+- dart example/timer_example/timer_example.dart --timer Rohd
+- dart example/timer_example/timer_example.dart --timer Rohme
+
 # clock zone examples
 
 The three clock zone examples demonstrate different use cases for ClockZones. The first just shows the basic functionality of ClockZones, with the first clock zone dividing the Simulator's clock twice, and the second clock zone dividing the first by another factor of two.

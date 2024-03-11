@@ -33,11 +33,10 @@ late final Module top;
 /// spawn Futures.
 ///
 /// (1) Construction Phase
-/// This phase is an implicit phase, started by calling the constructor of the
-/// top level object. The components construct themselves by constructing
-/// children inside their own constructors. This is also the place where
-/// (ex)[Port] to implementation binding should be specified, using the
-/// Port.implementedBy function.
+/// This phase constructs the top level module. The components construct
+/// themselves by constructing children inside their own constructors. This is
+/// also the place where (ex)[Port] to implementation binding should be
+/// specified, using the [Port.implementedBy] function.
 ///
 /// (2) Connect Phase
 /// Module authors use the Connect Phase to specify [Port] to (ex)[Port] binding,
@@ -62,12 +61,14 @@ late final Module top;
 Future<void> simulateModel(Module Function() createTop,
     {SimDuration clockPeriod = const SimDuration(picoseconds: 1),
     SimDuration duration = const SimDuration(seconds: 1)}) async {
+  // construct the simulator singleton, before constructing top level module
   _simulator = Simulator(clockPeriod: clockPeriod);
 
   simulator.run((async) {
+    // construction phase
     top = createTop();
 
-    // a bit of hierarchy debug
+    // hierarchy debug
     visit(top, topDown: (Module m) {
       print('instance ${m.fullName} type ${m.runtimeType}');
 
@@ -77,19 +78,22 @@ Future<void> simulateModel(Module Function() createTop,
         }
       }
     });
-
-    // the three explicit phases
+    // connection phase
     visit(top, bottomUp: (Module m) {
       m.connect();
     });
+
+    // post connect phase
     visit(top, bottomUp: (Module m) {
       m.postConnect();
     });
 
+    // run phase
     visit(top, bottomUp: (Module m) {
       m.run();
     });
   });
 
+  // wait until end of sim
   await simulator.elapse(duration);
 }

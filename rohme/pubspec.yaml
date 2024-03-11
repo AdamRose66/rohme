@@ -10,7 +10,7 @@ dependencies:
   clock: ^1.1.0
   collection: ^1.15.0
   rohd:
-    path: ../../rohd
+    git: https://github.com/intel/rohd.git
 
 dev_dependencies:
   lints: ^3.0.0
