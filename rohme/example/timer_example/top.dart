@@ -13,35 +13,59 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 */
 
 import 'package:rohme/rohme.dart';
+import 'hardware_timer.dart';
 import 'register_map.dart';
+import 'dart:async';
 
-/// An abstract base class for the Rohd and Rohme Hardware timers.
-///
-/// This class defines the registers and signals needed by a HardWareTimer to
-/// interact with the external Rohme environment.
-abstract class HardWareTimer extends Module {
-  // external connections
-  late final SignalWritePort irq;
+typedef HardWareTimerFactory = HardWareTimer Function(String, Module, int);
 
-  // internal fields and registers
-  late final Register timeRegister, controlRegister, elapsedRegister;
-  late final Field startField, stopField, continuousField;
+class Top extends Module {
+  late final Memory memory;
+  late final HardWareTimer hardwareTimer;
+  late final Signal timerIrq;
 
-  // the number of system clocks per timer clock
-  final int clockDivider;
+  int memoryWriteAddress = 0;
+  final timerClockDivider = 10;
 
-  HardWareTimer(super.name, super.parent, this.clockDivider) {
-    // create the irq port used to communicate with the outside world
-    irq = SignalWritePort('irq', this);
+  Top(super.name, HardWareTimerFactory timerFactory) {
+    memory =
+        Memory('memoryA', this, 0x1000, duration: SimDuration(picoseconds: 10));
+    hardwareTimer = timerFactory('timer', this, timerClockDivider);
+    timerIrq = Signal();
+  }
 
-    // get the registers from the register map
-    timeRegister = registerMap.getByName('TIMER.TIME');
-    controlRegister = registerMap.getByName('TIMER.CONTROL');
-    elapsedRegister = registerMap.getByName('TIMER.ELAPSED');
+  @override
+  void connect() {
+    hardwareTimer.irq.implementedBy(timerIrq);
 
-    // get the fields from the registers
-    startField = controlRegister['START'];
-    stopField = controlRegister['STOP'];
-    continuousField = controlRegister['CONTINUOUS'];
+    timerIrq.alwaysAt((signal) {
+      interrupt();
+    }, posEdge);
+  }
+
+  Future<void> interrupt() async {
+    mPrint('interrupt');
+    for (int i = 0; i < 4; i++, memoryWriteAddress += 4) {
+      await memory.write32(memoryWriteAddress, i);
+      mPrint('  just written ${i.hex()} to ${memoryWriteAddress.hex()}');
+    }
+  }
+
+  @override
+  Future<void> run() async {
+    const loops = 3;
+    const clocksPerLoop = 10;
+
+    await clockDelay(300);
+
+    registerMap[0x0].write(clocksPerLoop);
+    registerMap[0x4]['CONTINUOUS'].write(1);
+    registerMap[0x4]['START'].write(1);
+
+    print('current Zone clock period is ${Zone.current[#clockPeriod]}');
+    await clockDelay((clocksPerLoop * loops - 1) * timerClockDivider);
+
+    registerMap[0x4]['STOP'].write(1);
+    mPrint('${registerMap[0x8].read()} timer loops have expired');
   }
 }

@@ -1,20 +1,20 @@
-import '../example/timer_example/timer_example.dart';
+import '../example/timer_example/top.dart';
 import '../example/timer_example/register_map.dart';
+import '../example/timer_example/rohme_timer/rohme_hardware_timer.dart';
 
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('A group of tests', () {
-    setUp(() {
-      // Additional setup goes here.
-    });
-
-    test('memory map test', () async {
-      simulateModel(() {
-        initialiseRegisterMap();
-        return Top('top');
-      });
-    });
+  test('timer test', () async {
+    await simulateModel(() {
+      initialiseRegisterMap();
+      return Top(
+          'top',
+          (name, parent, clockDivider) =>
+              RohmeHardWareTimer(name, parent, clockDivider));
+    },
+        clockPeriod: SimDuration(picoseconds: 10),
+        duration: SimDuration(nanoseconds: 7));
   });
 }

@@ -20,13 +20,17 @@ import 'package:test/test.dart';
 List<SimDuration> criticalA = [];
 List<SimDuration> criticalB = [];
 
-void runMutexTest(int loops) {
+late Simulator simulator;
+
+Future<void> runMutexTest(int loops) async {
   print('starting mutexTest');
+
+  simulator = Simulator();
 
   simulator.run((async) {
     mutexTest(loops);
   });
-  simulator.elapse(SimDuration(seconds: 1));
+  await simulator.elapse(SimDuration(seconds: 1));
   print('finished sim at ${simulator.elapsed}');
 
   expect(criticalA.length, equals(loops));
@@ -72,20 +76,11 @@ void expectNoOverlap(List<SimDuration> l1, List<SimDuration> l2) {
 // below
 //
 void main() async {
-  group('A group of tests', () {
-    bool beenHere = false;
-    setUp(() {
-      if (!beenHere) {
-        simulateModel(() {
-          return Module('top');
-        });
-      }
-      beenHere = true;
-    });
+  group('Mutex tests', () {
+    tearDown(() => Simulator.resetRohdSim());
 
-    test('Mutex Test', () async {
-      runMutexTest(3);
-    });
+    test('Mutex Test', () async => await runMutexTest(3));
+
     test('Semaphore Size Test', () {
       bool ok = true;
       try {
@@ -96,6 +91,7 @@ void main() async {
       }
       expect(ok, false);
     });
+
     test('Semaphore Used Test', () async {
       Semaphore semaphore = Semaphore('s', size: 2);
 

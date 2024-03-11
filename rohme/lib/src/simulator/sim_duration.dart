@@ -111,6 +111,10 @@ class SimDuration implements Duration {
   /// An empty SimDuration, representing zero time.
   static const SimDuration zero = SimDuration(seconds: 0);
 
+  /// A special SimDuration, using to schedule a Timer in the current delta
+  /// cycle
+  static const SimDuration immediate = SimDuration(picoseconds: -1);
+
   /// The total microseconds of this [SimDuration] object.
   final int _simDuration;
 

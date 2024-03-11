@@ -45,7 +45,7 @@ void main() {
         microtaskTest.run();
       });
 
-      simulator.elapse(SimDuration(microseconds: 30));
+      await simulator.elapse(SimDuration(microseconds: 30));
       print('$microtaskTest');
 
       StringBuffer buffer = StringBuffer();

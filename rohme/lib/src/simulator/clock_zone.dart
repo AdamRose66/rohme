@@ -157,6 +157,7 @@ class ClockZone implements ClockDelayIf {
       return;
     }
 
+    print('doing clock zone suspend');
     _suspended = simulator.suspend(zone, (zone) => _equalsOrIsChild(zone));
     _suspensionTime = simulator.elapsed;
   }

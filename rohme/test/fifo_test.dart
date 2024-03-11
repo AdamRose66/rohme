@@ -17,11 +17,16 @@ import 'dart:async';
 import 'package:rohme/rohme.dart';
 import 'package:test/test.dart';
 
-void runFifoTest(SimDuration duration, int size) {
-  simulator.run((async) {
+late Simulator simulator;
+
+Future<void> runFifoTest(SimDuration duration, int size) async {
+  simulator = Simulator();
+
+  simulator.run((simulator) {
     fifoTest(duration, size);
   });
-  simulator.elapse(SimDuration(seconds: 1));
+  await simulator.elapse(SimDuration(seconds: 1));
+
   print('finished test at ${simulator.elapsed}');
 }
 
@@ -55,24 +60,20 @@ Future<void> consumer(String name, int n, Fifo<int> fifo) async {
 }
 
 void main() async {
-  group('A group of tests', () {
-    bool beenHere = false;
-    setUp(() {
-      if (!beenHere) {
-        simulateModel(() {
-          return Module('top');
-        });
-      }
-      beenHere = true;
-    });
+  group('Fifo tests', () {
+    tearDown(() => Simulator.resetRohdSim());
 
-    test('Fifo Test', () async {
-      runFifoTest(SimDuration.zero, 1);
-      runFifoTest(SimDuration(microseconds: 10), 1);
+    test('zero delay size 1',
+        () async => await runFifoTest(SimDuration.zero, 1));
 
-      runFifoTest(SimDuration.zero, 2);
-      runFifoTest(SimDuration(microseconds: 10), 2);
-    });
+    test('delay 10 size 1',
+        () async => await runFifoTest(SimDuration(microseconds: 10), 1));
+
+    test('zero delay size 2',
+        () async => await runFifoTest(SimDuration.zero, 2));
+
+    test('delay 10 size 2',
+        () async => await runFifoTest(SimDuration(microseconds: 10), 2));
 
     test('Fifo Size Test', () {
       bool ok = true;

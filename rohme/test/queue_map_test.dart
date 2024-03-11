@@ -23,7 +23,7 @@ class Dummy implements Indexable<SimDuration> {
 }
 
 void main() {
-  group('A group of tests', () {
+  group('Queue map tests', () {
     setUp(() {
       // Additional setup goes here.
     });
@@ -90,7 +90,7 @@ void main() {
     expect(queueMap.firstKey, SimDuration.zero);
     var removedQueue = queueMap.removeFirstQueue();
 
-    print('queueMap\n${queueMap}');
+    print('queueMap\n$queueMap');
 
     expect(queueMap.firstKey, SimDuration(picoseconds: 10));
 

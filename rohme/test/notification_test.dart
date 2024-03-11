@@ -20,13 +20,13 @@ import 'package:test/test.dart';
 
 Simulator simulator = Simulator();
 
-void runNotificationTest(int d1, int d2) {
+Future<void> runNotificationTest(int d1, int d2) async {
   print('starting notification test');
 
   simulator.run((async) {
     notificationTest(d1, d2);
   });
-  simulator.elapse(SimDuration(seconds: 1));
+  await simulator.elapse(SimDuration(seconds: 1));
 
   print('finished sim at ${simulator.elapsed}');
 }
@@ -65,13 +65,6 @@ Future<void> waitForAnyNotification(
 
 void main() async {
   group('A group of tests', () {
-/*
-    bool beenHere = false;
-    setUp(() {
-      if( !beenHere ) simulateModel( () { return Module('top'); });
-      beenHere = true;
-    });
-*/
     test('Notification Test', () async {
       runNotificationTest(10, 20);
     });

@@ -13,35 +13,38 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 */
 
 import 'package:rohme/rohme.dart';
-import 'register_map.dart';
+import 'package:test/test.dart';
 
-/// An abstract base class for the Rohd and Rohme Hardware timers.
-///
-/// This class defines the registers and signals needed by a HardWareTimer to
-/// interact with the external Rohme environment.
-abstract class HardWareTimer extends Module {
-  // external connections
-  late final SignalWritePort irq;
+import 'dart:async';
 
-  // internal fields and registers
-  late final Register timeRegister, controlRegister, elapsedRegister;
-  late final Field startField, stopField, continuousField;
+void main() async {
+  test('ClockDelayPort test', () {
+    simulateModel(() => Top('top'), clockPeriod: SimDuration(picoseconds: 10));
+  });
+}
 
-  // the number of system clocks per timer clock
-  final int clockDivider;
+class Top extends Module {
+  late final ClockDelayPort clockDelayPort;
+  late final ClockZone clockZone;
 
-  HardWareTimer(super.name, super.parent, this.clockDivider) {
-    // create the irq port used to communicate with the outside world
-    irq = SignalWritePort('irq', this);
+  Top(super.name) {
+    clockDelayPort = ClockDelayPort('clockDelayPort', this);
+    clockZone = ClockZone('zone', simulator.zone, 2);
+  }
 
-    // get the registers from the register map
-    timeRegister = registerMap.getByName('TIMER.TIME');
-    controlRegister = registerMap.getByName('TIMER.CONTROL');
-    elapsedRegister = registerMap.getByName('TIMER.ELAPSED');
+  @override
+  void connect() {
+    clockDelayPort.implementedBy(clockZone);
+  }
 
-    // get the fields from the registers
-    startField = controlRegister['START'];
-    stopField = controlRegister['STOP'];
-    continuousField = controlRegister['CONTINUOUS'];
+  @override
+  void run() {
+    doDelay();
+  }
+
+  Future<void> doDelay() async {
+    await clockDelayPort.delay(3);
+    print('$clockZone');
+    expect(simulator.elapsed, SimDuration(picoseconds: 60));
   }
 }

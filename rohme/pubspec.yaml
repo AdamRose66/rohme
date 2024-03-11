@@ -6,8 +6,11 @@ environment:
   sdk: ^3.2.4
 
 dependencies:
+  args: ^2.4.2
   clock: ^1.1.0
   collection: ^1.15.0
+  rohd:
+    path: ../../rohd
 
 dev_dependencies:
   lints: ^3.0.0

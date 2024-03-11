@@ -14,61 +14,34 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 import 'package:rohme/rohme.dart';
 
+import 'package:args/args.dart';
+
 import 'register_map.dart';
-import 'hardware_timer.dart';
+import 'top.dart';
+import 'rohme_timer/rohme_hardware_timer.dart';
+import 'rohd_timer/rohd_hardware_timer.dart';
 
-import 'dart:async';
+void main(List<String> args) async {
+  late HardWareTimerFactory timerFactory;
 
-void main() async {
+  var parser = ArgParser();
+  parser.addOption('timer', allowed: ['Rohme', 'Rohd'], defaultsTo: 'Rohme');
+  var results = parser.parse(args);
+
+  switch (results['timer']) {
+    case 'Rohme':
+      timerFactory = (name, parent, clockDivider) =>
+          RohmeHardWareTimer(name, parent, clockDivider);
+    case 'Rohd':
+      timerFactory = (name, parent, clockDivider) =>
+          RohdHardWareTimer(name, parent, clockDivider);
+  }
+
+  print('running test with ${results['timer']} timer');
   initialiseRegisterMap();
   simulateModel(() {
-    return Top('top');
-  }, clockPeriod: SimDuration(milliseconds: 10));
-}
-
-class Top extends Module {
-  late final Memory memory;
-  late final HardWareTimer hardwareTimer;
-  late final Signal timerIrq;
-
-  int memoryWriteAddress = 0;
-
-  Top(super.name) {
-    memory = Memory('memoryA', this, 0x1000);
-    hardwareTimer = HardWareTimer('timer', this);
-    timerIrq = Signal();
-  }
-
-  @override
-  void connect() {
-    hardwareTimer.irq.implementedBy(timerIrq);
-
-    timerIrq.alwaysAt((signal) {
-      interrupt();
-    }, posEdge);
-  }
-
-  Future<void> interrupt() async {
-    mPrint('interrupt');
-    for (int i = 0; i < 4; i++, memoryWriteAddress += 4) {
-      await memory.write32(memoryWriteAddress, i);
-      mPrint('  just written ${i.hex()} to ${memoryWriteAddress.hex()}');
-    }
-  }
-
-  @override
-  Future<void> run() async {
-    const loops = 3;
-    const clocksPerLoop = 10;
-
-    registerMap[0x0].write(clocksPerLoop);
-    registerMap[0x4]['CONTINUOUS'].write(1);
-    registerMap[0x4]['START'].write(1);
-
-    print('current Zone clock period is ${Zone.current[#clockPeriod]}');
-    await clockDelay(clocksPerLoop * loops);
-
-    registerMap[0x4]['STOP'].write(1);
-    mPrint('${registerMap[0x8].read()} timer loops have expired');
-  }
+    return Top('top', timerFactory);
+  },
+      clockPeriod: SimDuration(picoseconds: 10),
+      duration: SimDuration(nanoseconds: 7));
 }

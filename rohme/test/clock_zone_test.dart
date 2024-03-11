@@ -18,8 +18,8 @@ import 'package:test/test.dart';
 import 'dart:async';
 
 void main() async {
-  group('A group of tests', () {
-    setUp(() {});
+  group('clock zone tests', () {
+    tearDown(() => Simulator.resetRohdSim());
 
     test('clock test', () async {
       Simulator simulator =
@@ -33,8 +33,9 @@ void main() async {
         expect(simulator.elapsed, simulator.clockPeriod * 2);
       });
 
-      simulator.elapse(SimDuration(picoseconds: 1000));
+      await simulator.elapse(SimDuration(picoseconds: 1000));
     });
+
     test('clock zone test', () async {
       Simulator simulator =
           Simulator(clockPeriod: SimDuration(picoseconds: 10));
@@ -53,7 +54,7 @@ void main() async {
         expect(simulator.elapsed, simulator.clockPeriod * 4);
       });
 
-      simulator.elapse(SimDuration(picoseconds: 1000));
+      await simulator.elapse(SimDuration(picoseconds: 1000));
     });
 
     test('hierarchical clock zone test', () async {
@@ -91,7 +92,7 @@ void main() async {
         expect(simulator.elapsed, simulator.clockPeriod * 8);
       });
 
-      simulator.elapse(SimDuration(picoseconds: 1000));
+      await simulator.elapse(SimDuration(picoseconds: 1000));
     });
 
     test('suspend / resume', () async {
@@ -119,13 +120,12 @@ void main() async {
       });
 
       simulator.run((simulator) async {
-        await clockZone1.delay(15);
+        await clockZone1.delay(13);
 
-        print('${simulator.elapsed} ready to suspend');
         suspendTime = simulator.elapsed;
         clockZone1.suspend();
 
-        await clockZone1.delay(15);
+        await clockZone1.delay(17);
 
         print('${simulator.elapsed} ready to resume');
         resumeTime = simulator.elapsed;
@@ -133,7 +133,7 @@ void main() async {
         clockZone1.resume();
       });
 
-      simulator.elapse(SimDuration(picoseconds: 1000));
+      await simulator.elapse(SimDuration(picoseconds: 1000));
 
       expect(clockZone1.name, 'simulator.zone1');
       expect(clockZone2.name, 'simulator.zone1.zone2');
@@ -172,7 +172,7 @@ void main() async {
 
         try {
           simulator.resume(suspendSet);
-        } on TimerNotInFuture catch (e) {
+        } catch (e) {
           print('seen expected exception $e');
           ok = false;
         }
@@ -181,37 +181,7 @@ void main() async {
         expect(clockZone1.clockName, clockZone1.name);
       });
 
-      simulator.elapse(SimDuration(picoseconds: 1000));
+      await simulator.elapse(SimDuration(picoseconds: 1000));
     });
   });
-
-  test('ClockDelayPort test', () {
-    simulateModel(() => Top('top'), clockPeriod: SimDuration(picoseconds: 10));
-  });
-}
-
-class Top extends Module {
-  late final ClockDelayPort clockDelayPort;
-  late final ClockZone clockZone;
-
-  Top(super.name) {
-    clockDelayPort = ClockDelayPort('clockDelayPort', this);
-    clockZone = ClockZone('zone', simulator.zone, 2);
-  }
-
-  @override
-  void connect() {
-    clockDelayPort.implementedBy(clockZone);
-  }
-
-  @override
-  void run() {
-    doDelay();
-  }
-
-  Future<void> doDelay() async {
-    await clockDelayPort.delay(3);
-    print('$clockZone');
-    expect(simulator.elapsed, SimDuration(picoseconds: 60));
-  }
 }

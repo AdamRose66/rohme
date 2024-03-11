@@ -91,5 +91,5 @@ Future<void> simulateModel(Module Function() createTop,
     });
   });
 
-  simulator.elapse(duration);
+  await simulator.elapse(duration);
 }
